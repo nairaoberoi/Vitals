@@ -99,10 +99,11 @@ export function exportCSV() {
         date: d.date,
         time: d.time || "",
         meal: d.meal || "",
+        location: d.location || "Home",
         text: d.text || "",
         notes: d.notes || "",
       })),
-      ["date", "time", "meal", "text", "notes"]
+      ["date", "time", "meal", "location", "text", "notes"]
     ),
     "text/csv"
   );

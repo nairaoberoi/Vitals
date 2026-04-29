@@ -299,7 +299,7 @@ function HeadacheTab() {
                         {h.severity}
                       </span>
                     ) : (
-                      <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#E8E6E2] text-muted-foreground">
+                      <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#E0E5EC] text-muted-foreground">
                         no headache
                       </span>
                     )}
@@ -422,7 +422,7 @@ export default function Symptoms() {
   return (
     <MobileLayout subtitle="Track" title="Symptoms">
       <Tabs defaultValue={initialTab} className="w-full" data-testid="symptoms-tabs">
-        <TabsList className="grid grid-cols-2 w-full bg-[#E8E6E2] p-1 rounded-full mb-5 h-auto">
+        <TabsList className="grid grid-cols-2 w-full bg-[#E0E5EC] p-1 rounded-full mb-5 h-auto">
           <TabsTrigger
             value="fatigue"
             className="rounded-full text-sm py-2 data-[state=active]:bg-[#FBFAF8] data-[state=active]:text-foreground"

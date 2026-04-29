@@ -129,7 +129,7 @@ export default function Documents() {
                 className="flex items-center gap-3 flex-1 min-w-0 text-left"
                 data-testid={`doc-open-${m.id}`}
               >
-                <div className="w-11 h-11 rounded-lg bg-[#E8E6E2] grid place-items-center flex-shrink-0">
+                <div className="w-11 h-11 rounded-lg bg-[#E0E5EC] grid place-items-center flex-shrink-0">
                   {m.mime?.startsWith("image/") ? (
                     <ImageIcon className="w-5 h-5 text-[#5B7C99]" strokeWidth={1.5} />
                   ) : (

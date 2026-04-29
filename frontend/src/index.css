@@ -180,12 +180,12 @@ code {
 }
 
 /* Fatigue heatmap cell */
-.heat-0 { background: #E8E6E2; }
-.heat-1 { background: #D8DCE3; }
-.heat-2 { background: #B6C2D2; }
+.heat-0 { background: #E0E5EC; }
+.heat-1 { background: #D0D7E0; }
+.heat-2 { background: #C5CFDB; }
 .heat-3 { background: #8FA4BC; }
 .heat-4 { background: #6E8AA6; }
-.heat-5 { background: #4F6F8A; }
+.heat-5 { background: #5B7C99; }
 
 /* Tap target safeguard */
 .tap-44 { min-height: 44px; min-width: 44px; }

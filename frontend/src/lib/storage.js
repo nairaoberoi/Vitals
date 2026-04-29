@@ -192,22 +192,31 @@ export const headacheAPI = {
 };
 
 // ------------- Diet -------------
-// { id, date, time (HH:MM), meal: 'Breakfast'|'Lunch'|'Dinner'|'Snack', text, notes }
+// { id, date, time (HH:MM), meal: 'Breakfast'|'Lunch'|'Dinner'|'Snack',
+//   location: 'Home'|'Out', text, notes }
+// Legacy entries without `location` default to 'Home' on read.
 export const dietAPI = {
   list() {
-    return readList(KEYS.diet).sort((a, b) => {
-      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
-      return (a.time || "") < (b.time || "") ? 1 : -1;
-    });
+    return readList(KEYS.diet)
+      .map((e) => ({ ...e, location: e.location || "Home" }))
+      .sort((a, b) => {
+        if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+        return (a.time || "") < (b.time || "") ? 1 : -1;
+      });
   },
   byDate(date) {
     return readList(KEYS.diet)
       .filter((t) => t.date === date)
+      .map((e) => ({ ...e, location: e.location || "Home" }))
       .sort((a, b) => (a.time || "") < (b.time || "") ? -1 : 1);
   },
   add(entry) {
     const list = readList(KEYS.diet);
-    list.push({ id: uid(), ...entry });
+    list.push({
+      id: uid(),
+      location: "Home",
+      ...entry,
+    });
     writeList(KEYS.diet, list);
   },
   remove(id) {

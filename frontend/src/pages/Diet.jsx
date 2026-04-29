@@ -8,10 +8,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { dietAPI } from "@/lib/storage";
 import { todayISO, fmt } from "@/lib/dateUtils";
 import { Plus, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
-import { addDays, subDays, format, parseISO } from "date-fns";
+import { addDays, subDays, format, startOfWeek } from "date-fns";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from "recharts";
 import { toast } from "sonner";
 
 const meals = ["Breakfast", "Lunch", "Dinner", "Snack"];
+
+const HOME_COLOR = "#8ca3b8";
+const OUT_COLOR = "#dee5eb";
 
 export default function Diet() {
   const [refresh, setRefresh] = useState(0);
@@ -20,11 +24,31 @@ export default function Diet() {
 
   const [open, setOpen] = useState(false);
   const [meal, setMeal] = useState("Breakfast");
+  const [location, setLocation] = useState("Home");
   const [time, setTime] = useState("");
   const [text, setText] = useState("");
   const [notes, setNotes] = useState("");
 
   const entries = useMemo(() => dietAPI.byDate(viewDateStr), [refresh, viewDateStr]);
+
+  // Current week (Mon-Sun) stats — always reflects this week regardless of viewDate
+  const weekDays = useMemo(() => {
+    const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
+    return Array.from({ length: 7 }, (_, i) => addDays(monday, i));
+  }, []);
+  const weekData = useMemo(() => {
+    const all = dietAPI.list();
+    return weekDays.map((d) => {
+      const ds = format(d, "yyyy-MM-dd");
+      const dayEntries = all.filter((e) => e.date === ds);
+      const home = dayEntries.filter((e) => (e.location || "Home") === "Home").length;
+      const out = dayEntries.filter((e) => (e.location || "Home") === "Out").length;
+      return { day: format(d, "EEEEE"), date: ds, Home: home, Out: out };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refresh, weekDays]);
+  const weekHomeCount = weekData.reduce((s, d) => s + d.Home, 0);
+  const weekOutCount = weekData.reduce((s, d) => s + d.Out, 0);
 
   const save = () => {
     if (!text.trim()) {
@@ -35,11 +59,13 @@ export default function Diet() {
       date: viewDateStr,
       time: time || format(new Date(), "HH:mm"),
       meal,
+      location,
       text: text.trim(),
       notes,
     });
     setOpen(false);
     setMeal("Breakfast");
+    setLocation("Home");
     setTime("");
     setText("");
     setNotes("");
@@ -68,6 +94,14 @@ export default function Diet() {
         </Button>
       }
     >
+      {/* Weekly summary line */}
+      <p
+        className="text-xs text-muted-foreground mb-3 px-1 tabular"
+        data-testid="diet-weekly-summary"
+      >
+        This week: {weekHomeCount} meal{weekHomeCount === 1 ? "" : "s"} home, {weekOutCount} out.
+      </p>
+
       {/* Day selector */}
       <div className="soft-card flex items-center justify-between p-2 mb-4" data-testid="diet-day-selector">
         <button
@@ -114,7 +148,7 @@ export default function Diet() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#E0E5EC] text-[#3A4D5E]">
-                    {e.meal}
+                    {e.meal} · {e.location || "Home"}
                   </span>
                   {e.time && <span className="text-[11px] text-muted-foreground tabular">{e.time}</span>}
                 </div>
@@ -133,6 +167,48 @@ export default function Diet() {
           ))}
         </ul>
       )}
+
+      {/* Weekly stacked bar chart — current week, no labels on bars */}
+      <section className="soft-card p-4 mt-5" data-testid="diet-weekly-chart-section">
+        <h2 className="text-sm font-medium mb-3">This week</h2>
+        <div className="h-40" data-testid="diet-weekly-chart">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={weekData} margin={{ top: 8, right: 8, left: -28, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="day" tickLine={false} axisLine={false} />
+              <YAxis hide allowDecimals={false} />
+              <Tooltip
+                cursor={{ fill: "rgba(91,124,153,0.06)" }}
+                contentStyle={{
+                  background: "#FBFAF8",
+                  border: "1px solid hsl(var(--border))",
+                  borderRadius: 12,
+                  fontSize: 12,
+                }}
+              />
+              <Bar dataKey="Home" stackId="meals" fill={HOME_COLOR} radius={[0, 0, 0, 0]} />
+              <Bar dataKey="Out" stackId="meals" fill={OUT_COLOR} radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        {/* Legend */}
+        <div className="flex items-center gap-4 mt-2 px-1" data-testid="diet-chart-legend">
+          <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <span
+              className="inline-block w-2.5 h-2.5 rounded-full"
+              style={{ background: HOME_COLOR }}
+            />
+            Home
+          </span>
+          <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <span
+              className="inline-block w-2.5 h-2.5 rounded-full border border-border"
+              style={{ background: OUT_COLOR }}
+            />
+            Out
+          </span>
+        </div>
+      </section>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-sm rounded-2xl bg-[#FBFAF8]" data-testid="diet-dialog">
@@ -155,6 +231,26 @@ export default function Diet() {
                     data-testid={`meal-${m.toLowerCase()}`}
                   >
                     {m}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs">Location</Label>
+              <div className="grid grid-cols-2 gap-2 mt-1" data-testid="diet-location-toggle">
+                {["Home", "Out"].map((loc) => (
+                  <button
+                    key={loc}
+                    onClick={() => setLocation(loc)}
+                    className={`tap-44 rounded-xl border text-sm transition-colors ${
+                      location === loc
+                        ? "bg-[#5B7C99] text-white border-[#5B7C99]"
+                        : "bg-white border-border text-foreground/70"
+                    }`}
+                    data-testid={`location-${loc.toLowerCase()}`}
+                    aria-pressed={location === loc}
+                  >
+                    {loc}
                   </button>
                 ))}
               </div>

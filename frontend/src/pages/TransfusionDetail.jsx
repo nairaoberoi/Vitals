@@ -198,7 +198,7 @@ export default function TransfusionDetail() {
                       className="flex items-center gap-2 flex-1 min-w-0 text-left"
                       data-testid={`attachment-open-${a.id}`}
                     >
-                      <div className="w-9 h-9 rounded-md bg-[#E8E6E2] grid place-items-center flex-shrink-0">
+                      <div className="w-9 h-9 rounded-md bg-[#E0E5EC] grid place-items-center flex-shrink-0">
                         {a.mime?.startsWith("image/") ? (
                           <ImageIcon className="w-4 h-4 text-[#5B7C99]" strokeWidth={1.5} />
                         ) : (

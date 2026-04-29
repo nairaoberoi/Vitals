@@ -50,7 +50,7 @@ export default function SettingsPage() {
           className="soft-card w-full p-4 flex items-center gap-3 hover:border-foreground/30 transition-colors text-left tap-44"
           data-testid="export-json-btn"
         >
-          <div className="w-10 h-10 rounded-lg bg-[#E8E6E2] grid place-items-center">
+          <div className="w-10 h-10 rounded-lg bg-[#E0E5EC] grid place-items-center">
             <Download className="w-4 h-4 text-[#5B7C99]" strokeWidth={1.5} />
           </div>
           <div>
@@ -63,7 +63,7 @@ export default function SettingsPage() {
           className="soft-card w-full p-4 flex items-center gap-3 hover:border-foreground/30 transition-colors text-left tap-44"
           data-testid="export-csv-btn"
         >
-          <div className="w-10 h-10 rounded-lg bg-[#E8E6E2] grid place-items-center">
+          <div className="w-10 h-10 rounded-lg bg-[#E0E5EC] grid place-items-center">
             <FileText className="w-4 h-4 text-[#5B7C99]" strokeWidth={1.5} />
           </div>
           <div>
@@ -90,7 +90,7 @@ export default function SettingsPage() {
               className="soft-card w-full p-4 flex items-center gap-3 text-left tap-44"
               data-testid="clear-data-btn"
             >
-              <div className="w-10 h-10 rounded-lg bg-[#E8E6E2] grid place-items-center">
+              <div className="w-10 h-10 rounded-lg bg-[#E0E5EC] grid place-items-center">
                 <Trash2 className="w-4 h-4 text-[#996A5B]" strokeWidth={1.5} />
               </div>
               <div>
