@@ -85,19 +85,22 @@ export default function Transfusions() {
     >
       {/* Calendar */}
       <section className="soft-card p-3 mb-5" data-testid="transfusion-calendar">
-        <DayPicker
-          mode="single"
-          modifiers={{ transfusion: transfusionDates }}
-          modifiersClassNames={{ transfusion: "transfusion-day" }}
-          onDayClick={(day) => {
-            const ds = fmt(day, "yyyy-MM-dd");
-            const match = items.find((t) => t.date === ds);
-            if (match) {
-              navigate(`/transfusions/${match.id}`);
-            }
-          }}
-          showOutsideDays
-        />
+        <div className="flex justify-center">
+          <DayPicker
+            mode="single"
+            modifiers={{ transfusion: transfusionDates }}
+            modifiersClassNames={{ transfusion: "transfusion-day" }}
+            onDayClick={(day) => {
+              const ds = fmt(day, "yyyy-MM-dd");
+              const match = items.find((t) => t.date === ds);
+              if (match) {
+                navigate(`/transfusions/${match.id}`);
+              }
+            }}
+            showOutsideDays={false}
+            weekStartsOn={1}
+          />
+        </div>
         <div className="flex items-center gap-2 px-2 pt-2 border-t border-border">
           <span className="inline-block w-3 h-3 rounded-full bg-[#5B7C99]" />
           <span className="text-xs text-muted-foreground">Transfusion day</span>
@@ -113,12 +116,12 @@ export default function Transfusions() {
             No data yet. Add a transfusion to see the trend.
           </p>
         ) : (
-          <div className="h-56" data-testid="hb-chart">
+          <div className="h-48" data-testid="hb-chart">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
+              <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="date" tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} domain={["auto", "auto"]} width={32} />
+                <YAxis tickLine={false} axisLine={false} domain={["auto", "auto"]} width={40} />
                 <Tooltip
                   contentStyle={{
                     background: "#FBFAF8",

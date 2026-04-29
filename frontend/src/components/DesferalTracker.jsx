@@ -4,7 +4,7 @@ import "react-day-picker/dist/style.css";
 import { Input } from "@/components/ui/input";
 import { desferalAPI } from "@/lib/storage";
 import { todayISO, fmt, parseISO } from "@/lib/dateUtils";
-import { format, startOfWeek, addDays, addMonths, subMonths, isSameMonth } from "date-fns";
+import { format, startOfWeek, addDays, isSameMonth } from "date-fns";
 
 const dayInitials = ["M", "T", "W", "T", "F", "S", "S"];
 
@@ -63,8 +63,11 @@ export default function DesferalTracker() {
         {weekDoneCount} / 7 nights this week
       </p>
 
-      {/* Weekly strip */}
-      <div className="grid grid-cols-7 gap-1.5 mb-4" data-testid="desferal-week-strip">
+      {/* Weekly strip — column widths match the monthly calendar's --rdp-cell-size */}
+      <div
+        className="flex justify-center mb-4"
+        data-testid="desferal-week-strip"
+      >
         {weekDays.map((d, i) => {
           const ds = format(d, "yyyy-MM-dd");
           const done = doneSet.has(ds);
@@ -73,7 +76,8 @@ export default function DesferalTracker() {
               key={ds}
               onClick={() => toggle(ds)}
               data-testid={`desferal-day-${ds}`}
-              className="tap-44 flex flex-col items-center justify-center py-2 group"
+              className="flex flex-col items-center justify-center group"
+              style={{ width: "var(--rdp-cell-size)", minHeight: 56 }}
               aria-label={`${format(d, "EEE MMM d")} — ${done ? "done" : "missed"}`}
               aria-pressed={done}
             >
@@ -96,28 +100,8 @@ export default function DesferalTracker() {
         })}
       </div>
 
-      {/* Monthly calendar */}
-      <div className="border-t border-border pt-3" data-testid="desferal-calendar-wrap">
-        <div className="flex items-center justify-between mb-1 px-1">
-          <button
-            onClick={() => setMonth((m) => subMonths(m, 1))}
-            data-testid="desferal-prev-month"
-            aria-label="Previous month"
-            className="tap-44 w-9 h-9 grid place-items-center rounded-full text-muted-foreground hover:text-foreground"
-          >
-            ‹
-          </button>
-          <span className="text-xs font-medium">{format(month, "MMMM yyyy")}</span>
-          <button
-            onClick={() => setMonth((m) => addMonths(m, 1))}
-            data-testid="desferal-next-month"
-            aria-label="Next month"
-            className="tap-44 w-9 h-9 grid place-items-center rounded-full text-muted-foreground hover:text-foreground"
-          >
-            ›
-          </button>
-        </div>
-
+      {/* Monthly calendar — uses DayPicker's default caption to match the transfusion calendar */}
+      <div className="border-t border-border pt-3 flex justify-center" data-testid="desferal-calendar-wrap">
         <DayPicker
           mode="single"
           month={month}
@@ -127,22 +111,12 @@ export default function DesferalTracker() {
           modifiersClassNames={{ desferal: "desferal-day" }}
           onDayClick={(day) => {
             const ds = format(day, "yyyy-MM-dd");
-            // Tap toggles AND selects the day so the dose editor reflects it
             setSelected(ds);
-            // Only toggle if the click is on a day in the visible month
-            // (DayPicker also renders outside-days; we still allow toggling them)
             toggle(ds);
-            // Keep month view stable
             if (!isSameMonth(day, month)) setMonth(day);
           }}
           showOutsideDays={false}
           weekStartsOn={1}
-          formatters={{
-            formatCaption: () => "", // we render our own caption above
-          }}
-          styles={{
-            caption: { display: "none" },
-          }}
           data-testid="desferal-calendar"
         />
       </div>

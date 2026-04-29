@@ -93,10 +93,10 @@ function FatigueTab() {
         <h3 className="text-sm font-medium mb-2">Past 7 days</h3>
         <div className="h-40" data-testid="fatigue-weekly-chart">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={last7} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+            <BarChart data={last7} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="date" tickLine={false} axisLine={false} />
-              <YAxis domain={[0, 5]} ticks={[0, 1, 2, 3, 4, 5]} tickLine={false} axisLine={false} width={28} />
+              <YAxis hide domain={[0, 5]} />
               <Tooltip
                 contentStyle={{
                   background: "#FBFAF8",
@@ -266,10 +266,10 @@ function HeadacheTab() {
         <p className="text-[11px] text-muted-foreground mb-3">Past 8 weeks</p>
         <div className="h-40" data-testid="headache-weekly-chart">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={weekly} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+            <BarChart data={weekly} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="week" tickLine={false} axisLine={false} interval={1} />
-              <YAxis tickLine={false} axisLine={false} width={28} allowDecimals={false} />
+              <YAxis hide allowDecimals={false} />
               <Tooltip
                 contentStyle={{
                   background: "#FBFAF8",

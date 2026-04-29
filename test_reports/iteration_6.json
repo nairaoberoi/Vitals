@@ -1,0 +1,39 @@
+{
+  "summary": "Round-7 cosmetic/symmetry pass tested at mobile viewport 390x844 with seeded localStorage (4 transfusions, 5 ferritin readings up to 2150, 5 desferal entries this week). Most cosmetic asks PASS visually: Ferritin subtitle reads 'LOG' (stored as 'Log', rendered uppercase via CSS), both calendars use DayPicker default caption ('April 2026' + chevron prev/next nav buttons, weekStartsOn=Monday, showOutsideDays hidden), Hb-chart YAxis decimal labels (7.5/7.35/7.2/7.05/6.9) render WITHOUT clipping (verified visually in screenshot), transfusion-day class still renders full slate-blue circle, desferal-day dots render under marked dates (visible under 23, 25, etc.), all weekly bar charts (fatigue, headache, diet) measure h-40 (~160px) with hidden YAxis, Hb chart measures h-48 (~192px), Diet bar tooltip shows 'Home: N' and 'Out: N' with colored dots, bottom nav has 6 items, service worker registers. ONE CRITICAL bug found: Desferal weekly strip columns are NOT aligned with monthly calendar columns — strip cell centers are spaced ~28px apart while calendar header columns are spaced ~40px apart, causing per-column drifts of [+36, +24, +12, 0, -12, -24, -36] px. The middle Thursday column aligns by accident; outer columns are wildly off.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "DesferalTracker — weekly strip alignment with monthly calendar",
+        "issue": "CRITICAL: Strip cells render at ~28px width (content-fit) instead of 42px because the strip is OUTSIDE the .rdp DOM subtree. CSS rule `.rdp { --rdp-cell-size: 42px; }` (in /app/frontend/src/index.css line 135-140) only defines the custom property on .rdp descendants. The strip uses `style={{ width: 'var(--rdp-cell-size)' }}` but resolves to the var's initial value (empty), so flexbox collapses each button to its content width (~28px). Result: column centers diverge by up to 36px from the calendar header columns (M T W T F S S DO NOT sit above MO TU WE TH FR SA SU). This is exactly the symmetry the iteration intended to deliver.",
+        "selector": "[data-testid='desferal-week-strip'] button",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Ferritin > Desferal section",
+        "issues": ["Strip and calendar visibly misaligned: strip is narrower and centered, while calendar columns spread wider — first/last day-letters sit roughly halfway between calendar columns instead of directly above them."]
+      }
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "FIX desferal strip alignment: either (a) move `--rdp-cell-size: 42px;` declaration to `:root` (or to `.soft-card` / the parent of both strip and calendar) so the strip can resolve var(--rdp-cell-size); OR (b) hard-code width: 42px on each strip button; AND (c) verify the resulting cell width actually matches the live rendered calendar column width — the calendar headers measure ~40px center-to-center even with --rdp-cell-size=42px, so consider using the same exact value (e.g. read computed style of a .rdp-head_cell at runtime, or set both to 42px and add box-sizing if needed) to guarantee centers match within 2px."
+  ],
+  "critical_code_review_comments": [
+    "/app/frontend/src/index.css L135-140: --rdp-cell-size is scoped to .rdp only. Any sibling component that wants to align with the calendar (like the desferal weekly strip) cannot read it. Promote it to :root.",
+    "/app/frontend/src/components/DesferalTracker.jsx L80: relying on var(--rdp-cell-size) from outside the .rdp tree silently fails. Add a fallback: width: 'var(--rdp-cell-size, 42px)' would at least give 42px even when the var is unresolved.",
+    "Minor: Diet weekly chart is hidden when no data exists for the week — fine, but the tooltip handler returns null on empty payload which avoids ghost tooltips (good).",
+    "Minor: Transfusion calendar has navBtns ≥ 2 (prev/next chevrons) confirmed via .rdp-nav; default caption label 'April 2026' present — symmetry with desferal calendar OK."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (frontend-only)", "frontend": "92% (12/13 acceptance points pass; 1 fails — strip alignment)"},
+  "test_credentials": "n/a — fully client-side app, no auth",
+  "seed_data_creation": "Seeded localStorage in browser session via page.evaluate: thal.transfusions (4 entries, dates spaced ~21 days, with preHb 7.0-7.45 and dayHb 7.05-7.35), thal.ferritin (5 entries: 2150, 1850, 1620, 1450, 1280 spaced 30 days), thal.desferal (5 entries this week with dose=2000). All charts rendered with data.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Use same seed (see seed_data_creation). After main agent fixes the --rdp-cell-size scoping, retest by getting bounding boxes of (a) each [data-testid='desferal-week-strip'] button and (b) each .rdp-head_cell / th inside [data-testid='desferal-calendar-wrap']. Compute center-x for each pair and assert |strip_center[i] - header_center[i]| < 2px for i in 0..6. Expected behavior after fix: all 7 diffs near 0. Also re-verify: Ferritin subtitle textContent is 'Log' but visual computed style is uppercase (test must check getComputedStyle().textTransform === 'uppercase' OR raw text equals 'Log' — NOT 'IRON'). Y-axis tick selectors via JS for recharts can return empty during page transitions — wait_for_timeout(1500) after navigation, and verify visually via screenshot if JS selector fails.",
+  "rca of the issue": "BUG: Desferal weekly strip cells collapse to ~28px instead of 42px. RCA: CSS variable `--rdp-cell-size: 42px` is declared on the `.rdp { ... }` selector (only inside the calendar), but the weekly strip lives OUTSIDE the `.rdp` DOM subtree. CSS custom properties inherit from ancestors, so siblings cannot read it. When DesferalTracker.jsx applies `style={{ width: 'var(--rdp-cell-size)' }}` to each strip button, the var resolves to its initial (empty) value and the flex item shrinks to its content width (~28px). REPRO: open Ferritin tab → inspect any [data-testid='desferal-day-YYYY-MM-DD'] button → getBoundingClientRect().width returns ~28px instead of 42px. MITIGATION: Move the `--rdp-cell-size: 42px` declaration into `:root { ... }` (or onto the shared `.soft-card` parent that wraps both strip and calendar). Alternatively pass a literal `width: 42px` (with `var(--rdp-cell-size, 42px)` fallback). Then verify horizontally that calendar header cells also render at 42px — if DayPicker overrides the value internally to 40px, also pass weekStartsOn and explicitly set `style={{ '--rdp-cell-size': '42px' }}` on the DayPicker root so both render at the exact same width."
+}

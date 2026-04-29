@@ -54,7 +54,7 @@ export default function Ferritin() {
 
   return (
     <MobileLayout
-      subtitle="Iron"
+      subtitle="Log"
       title="Ferritin"
       rightAction={
         <Button
@@ -115,10 +115,10 @@ export default function Ferritin() {
         ) : (
           <div className="h-48" data-testid="ferritin-chart">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
+              <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="date" tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} width={36} />
+                <YAxis tickLine={false} axisLine={false} width={48} />
                 <Tooltip
                   contentStyle={{
                     background: "#FBFAF8",

@@ -179,11 +179,29 @@ export default function Diet() {
               <YAxis hide allowDecimals={false} />
               <Tooltip
                 cursor={{ fill: "rgba(91,124,153,0.06)" }}
-                contentStyle={{
-                  background: "#FBFAF8",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: 12,
-                  fontSize: 12,
+                content={({ active, payload, label }) => {
+                  if (!active || !payload || !payload.length) return null;
+                  const home = payload.find((p) => p.dataKey === "Home")?.value || 0;
+                  const out = payload.find((p) => p.dataKey === "Out")?.value || 0;
+                  return (
+                    <div className="bg-[#FBFAF8] border border-border rounded-xl px-3 py-2 text-xs">
+                      <div className="font-medium mb-1 text-foreground">{label}</div>
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <span
+                          className="inline-block w-2 h-2 rounded-full"
+                          style={{ background: HOME_COLOR }}
+                        />
+                        <span>Home: <span className="tabular text-foreground">{home}</span></span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-muted-foreground mt-0.5">
+                        <span
+                          className="inline-block w-2 h-2 rounded-full border border-border"
+                          style={{ background: OUT_COLOR }}
+                        />
+                        <span>Out: <span className="tabular text-foreground">{out}</span></span>
+                      </div>
+                    </div>
+                  );
                 }}
               />
               <Bar dataKey="Home" stackId="meals" fill={HOME_COLOR} radius={[0, 0, 0, 0]} />
