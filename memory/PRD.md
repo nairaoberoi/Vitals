@@ -50,6 +50,13 @@ A single thalassemia major patient using this on their personal phone. No multi-
 - **Dashboard quick-headache** is now a `<Link to="/symptoms?tab=headache">` — no more silent insertions. Symptoms page honors the `?tab=headache` deep link.
 - Round-5 testing: **100% pass (19/19)**, including legacy migration and `Clear all data` regression.
 
+**Day 6 (Feb 2026) — Diet weekly summary + chart**
+- Reverted the global app palette back to the **warm off-white** (`#F2F1EF` page, `#FBFAF8` cards, `#5B7C99` slate accent) after a brief experiment with a cool slate-blue palette.
+- Diet log: added a **secondary-gray weekly summary line** above the day selector — `"This week: X meals home, Y out."` — updating live (with proper "meal"/"meals" pluralization on the home count).
+- Diet log: added a **stacked bar chart** for the current week (Mon-Sun) below the entries — Home segments in `#8ca3b8`, Out segments in `#dee5eb`. No labels on the bars. Minimal **two-item legend** (slate dot "Home" + bordered light-gray dot "Out").
+- `dietAPI` now treats legacy entries without a `location` field as `"Home"` for backward compatibility. CSV export gained a `location` column.
+- Round-6 test: 100% functional pass; one cosmetic margin tweak applied (Monday tick label was clipped due to negative `margin.left`).
+
 ## Prioritized backlog
 - **P1**: Optional reminders ("transfusion due in N days"), basic transfusion-cycle calculation.
 - **P1**: PDF text-search / preview thumbnails for Documents.

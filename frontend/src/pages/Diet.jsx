@@ -173,7 +173,7 @@ export default function Diet() {
         <h2 className="text-sm font-medium mb-3">This week</h2>
         <div className="h-40" data-testid="diet-weekly-chart">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={weekData} margin={{ top: 8, right: 8, left: -28, bottom: 0 }}>
+            <BarChart data={weekData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="day" tickLine={false} axisLine={false} />
               <YAxis hide allowDecimals={false} />
