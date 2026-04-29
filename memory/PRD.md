@@ -38,6 +38,12 @@ A single thalassemia major patient using this on their personal phone. No multi-
 **Day 3 (Feb 2026)**
 - **Desferal compliance tracker** inside the Ferritin tab (above the trend chart): weekly strip (M T W T F S S) with live "X / 7 nights this week"; full-month calendar with prev/next nav and small slate dot per Desferal night; tap-to-toggle on both controls; "Selected day" panel with optional `dose (mg)` input that appears only when that day is marked. Neutral filled / unfilled — no red, no green. All data via the storage API (`thal.desferal`). Ready for future fatigue-correlation joins (same date format keys both arrays). Round-3 testing: **100% pass (28/28)**.
 
+**Day 4 (Feb 2026) — strict offline / zero-external-requests**
+- Removed PostHog analytics, `assets.emergent.sh/scripts/emergent-main.js`, and Google Fonts links from `public/index.html`.
+- Self-hosted **Manrope** + **Fraunces** via `@fontsource` (woff2 files bundled by webpack, served from same-origin `/static/media/`).
+- Added a strict **Content-Security-Policy** meta tag in `index.html`: `default-src 'self'`, no third-party origins. The browser blocks any cross-origin script/font/connect attempts — even ones injected by upstream CDNs (e.g. preview-environment Cloudflare RUM beacons are caught and refused).
+- Verified end-to-end: zero external requests succeed after install. App, fonts, SW, IndexedDB, all data flows are 100% same-origin / on-device. Re-tested all features — no regressions.
+
 ## Prioritized backlog
 - **P1**: Optional reminders ("transfusion due in N days"), basic transfusion-cycle calculation.
 - **P1**: PDF text-search / preview thumbnails for Documents.
