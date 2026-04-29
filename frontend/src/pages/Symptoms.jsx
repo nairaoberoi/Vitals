@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { fatigueAPI, headacheAPI } from "@/lib/storage";
 import { todayISO, fmt, lastNDays, monthRange, eachDay } from "@/lib/dateUtils";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -328,6 +328,9 @@ function HeadacheTab() {
         <DialogContent className="max-w-sm rounded-2xl bg-[#FBFAF8]" data-testid="headache-dialog">
           <DialogHeader>
             <DialogTitle>{date === todayISOStr && todayEntry ? "Today's headache" : "Log headache"}</DialogTitle>
+            <DialogDescription className="sr-only">
+              Log or update a headache entry for the selected day. Only one entry is kept per calendar date.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>

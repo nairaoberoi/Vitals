@@ -44,6 +44,12 @@ A single thalassemia major patient using this on their personal phone. No multi-
 - Added a strict **Content-Security-Policy** meta tag in `index.html`: `default-src 'self'`, no third-party origins. The browser blocks any cross-origin script/font/connect attempts — even ones injected by upstream CDNs (e.g. preview-environment Cloudflare RUM beacons are caught and refused).
 - Verified end-to-end: zero external requests succeed after install. App, fonts, SW, IndexedDB, all data flows are 100% same-origin / on-device. Re-tested all features — no regressions.
 
+**Day 5 (Feb 2026) — one entry per day, both symptom trackers**
+- **Fatigue**: was already correctly upserting via `setForDate`; verified pre-selected level on open and id-stability across re-taps (no duplicates). Dashboard's quick-fatigue shares the same one-per-day storage.
+- **Headache**: rewrote `headacheAPI` from `add` (which created duplicates) to `setForDate(date, payload)` upserting by calendar date. Dialog now: pre-fills `occurred / severity / duration / notes` from any existing entry on that date, hides severity & duration when "No" is selected, and submitting overwrites in place. Button label and a "Today: …" status line update live. Legacy entries (no `occurred` field) read as `occurred: true` for backward compatibility.
+- **Dashboard quick-headache** is now a `<Link to="/symptoms?tab=headache">` — no more silent insertions. Symptoms page honors the `?tab=headache` deep link.
+- Round-5 testing: **100% pass (19/19)**, including legacy migration and `Clear all data` regression.
+
 ## Prioritized backlog
 - **P1**: Optional reminders ("transfusion due in N days"), basic transfusion-cycle calculation.
 - **P1**: PDF text-search / preview thumbnails for Documents.
