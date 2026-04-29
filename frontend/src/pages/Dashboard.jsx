@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import MobileLayout from "@/components/MobileLayout";
 import { Button } from "@/components/ui/button";
-import { transfusionsAPI, ferritinAPI, fatigueAPI, headacheAPI, dietAPI } from "@/lib/storage";
+import { transfusionsAPI, ferritinAPI, fatigueAPI, dietAPI } from "@/lib/storage";
 import { todayISO, daysSince, fmt, avgIntervalDays } from "@/lib/dateUtils";
 import { ArrowUpRight, Droplet, Activity, Sparkle, ChevronRight } from "lucide-react";
 
@@ -39,12 +39,6 @@ export default function Dashboard() {
   // Quick add fatigue
   const setFatigue = (level) => {
     fatigueAPI.setForDate(today, level, fatigueToday?.notes || "");
-    setRefreshKey((k) => k + 1);
-  };
-
-  // Quick add headache
-  const logHeadache = () => {
-    headacheAPI.add({ date: today, severity: "mild", durationHours: null, notes: "" });
     setRefreshKey((k) => k + 1);
   };
 
@@ -159,15 +153,15 @@ export default function Dashboard() {
       <section className="mb-6" data-testid="quick-actions-section">
         <h2 className="text-sm font-medium text-foreground/80 mb-2 px-1">Log</h2>
         <div className="grid grid-cols-3 gap-2">
-          <button
-            onClick={logHeadache}
+          <Link
+            to="/symptoms?tab=headache"
             data-testid="quick-headache-btn"
             className="tap-44 soft-card p-3 flex flex-col items-start gap-1 text-left hover:border-foreground/30 transition-colors"
           >
             <Sparkle className="w-4 h-4 text-[#5B7C99]" strokeWidth={1.5} />
             <span className="text-xs font-medium">Headache</span>
-            <span className="text-[10px] text-muted-foreground">Quick log</span>
-          </button>
+            <span className="text-[10px] text-muted-foreground">Open log</span>
+          </Link>
           <Link
             to="/diet"
             data-testid="quick-diet-btn"

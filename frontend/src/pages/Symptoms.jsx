@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import MobileLayout from "@/components/MobileLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -158,13 +159,48 @@ function HeadacheTab() {
   const [refresh, setRefresh] = useState(0);
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(todayISO());
+  const [occurred, setOccurred] = useState(true);
   const [severity, setSeverity] = useState("mild");
   const [duration, setDuration] = useState("");
   const [notes, setNotes] = useState("");
 
   const items = useMemo(() => headacheAPI.list(), [refresh]);
+  const todayISOStr = todayISO();
+  const todayEntry = useMemo(
+    () => headacheAPI.byDate(todayISOStr),
+    [refresh, todayISOStr]
+  );
 
-  // Frequency by week (last 8 weeks)
+  // Pre-fill the form whenever the chosen date changes (incl. when opening the dialog)
+  // — if an entry exists for that date, load its values; otherwise reset to defaults.
+  const loadForDate = (d) => {
+    const existing = headacheAPI.byDate(d);
+    if (existing) {
+      setOccurred(existing.occurred);
+      setSeverity(existing.severity || "mild");
+      setDuration(existing.durationHours != null ? String(existing.durationHours) : "");
+      setNotes(existing.notes || "");
+    } else {
+      setOccurred(true);
+      setSeverity("mild");
+      setDuration("");
+      setNotes("");
+    }
+  };
+
+  const openDialog = () => {
+    const d = todayISOStr;
+    setDate(d);
+    loadForDate(d);
+    setOpen(true);
+  };
+
+  const onChangeDate = (newDate) => {
+    setDate(newDate);
+    loadForDate(newDate);
+  };
+
+  // Frequency by week (last 8 weeks) — only counts days where a headache occurred
   const weekly = useMemo(() => {
     const buckets = {};
     const now = new Date();
@@ -176,6 +212,7 @@ function HeadacheTab() {
     }
     const keys = Object.keys(buckets);
     items.forEach((h) => {
+      if (!h.occurred) return;
       const hd = new Date(h.date);
       const diffDays = Math.floor((now - hd) / 86400000);
       if (diffDays > 56 || diffDays < 0) return;
@@ -186,19 +223,15 @@ function HeadacheTab() {
   }, [items]);
 
   const save = () => {
-    headacheAPI.add({
-      date,
+    headacheAPI.setForDate(date, {
+      occurred,
       severity,
-      durationHours: duration ? Number(duration) : null,
+      durationHours: duration,
       notes,
     });
     setOpen(false);
-    setSeverity("mild");
-    setDuration("");
-    setNotes("");
-    setDate(todayISO());
     setRefresh((k) => k + 1);
-    toast.success("Headache logged");
+    toast.success(occurred ? "Saved" : "Saved — no headache");
   };
 
   const remove = (id) => {
@@ -215,12 +248,18 @@ function HeadacheTab() {
   return (
     <div className="space-y-5" data-testid="headache-tab-content">
       <Button
-        onClick={() => setOpen(true)}
+        onClick={openDialog}
         className="w-full tap-44 bg-[#5B7C99] hover:bg-[#4A6A87] text-white"
         data-testid="add-headache-btn"
       >
-        <Plus className="w-4 h-4 mr-2" strokeWidth={2} /> Log a headache
+        <Plus className="w-4 h-4 mr-2" strokeWidth={2} />
+        {todayEntry ? "Update today's entry" : "Log a headache"}
       </Button>
+      {todayEntry && (
+        <p className="text-[11px] text-muted-foreground -mt-3 px-1" data-testid="headache-today-status">
+          Today: {todayEntry.occurred ? `${todayEntry.severity}${todayEntry.durationHours != null ? ` · ${todayEntry.durationHours}h` : ""}` : "no headache"}
+        </p>
+      )}
 
       <section className="soft-card p-4">
         <h3 className="text-sm font-medium mb-1">Frequency by week</h3>
@@ -255,12 +294,21 @@ function HeadacheTab() {
               <li key={h.id} className="soft-card p-4 flex items-start justify-between gap-3" data-testid={`headache-item-${h.id}`}>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${severityColor[h.severity] || severityColor.mild}`}>
-                      {h.severity}
-                    </span>
+                    {h.occurred ? (
+                      <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${severityColor[h.severity] || severityColor.mild}`}>
+                        {h.severity}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#E8E6E2] text-muted-foreground">
+                        no headache
+                      </span>
+                    )}
                     <span className="text-xs text-muted-foreground">{fmt(h.date, "EEE, MMM d")}</span>
+                    {h.date === todayISOStr && (
+                      <span className="text-[10px] uppercase tracking-wider text-[#5B7C99]">today</span>
+                    )}
                   </div>
-                  {h.durationHours != null && (
+                  {h.occurred && h.durationHours != null && (
                     <div className="text-[11px] text-muted-foreground">
                       Duration: {h.durationHours}h
                     </div>
@@ -279,44 +327,77 @@ function HeadacheTab() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-sm rounded-2xl bg-[#FBFAF8]" data-testid="headache-dialog">
           <DialogHeader>
-            <DialogTitle>Log headache</DialogTitle>
+            <DialogTitle>{date === todayISOStr && todayEntry ? "Today's headache" : "Log headache"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
               <Label className="text-xs">Date</Label>
-              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="tap-44" data-testid="headache-date-input" />
+              <Input
+                type="date"
+                value={date}
+                onChange={(e) => onChangeDate(e.target.value)}
+                className="tap-44"
+                data-testid="headache-date-input"
+              />
             </div>
             <div>
-              <Label className="text-xs">Severity</Label>
-              <div className="grid grid-cols-3 gap-2 mt-1">
-                {["mild", "moderate", "severe"].map((s) => (
+              <Label className="text-xs">Did you have a headache?</Label>
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                {[
+                  { value: true, label: "Yes" },
+                  { value: false, label: "No" },
+                ].map((opt) => (
                   <button
-                    key={s}
-                    onClick={() => setSeverity(s)}
-                    className={`tap-44 rounded-xl border text-sm capitalize transition-colors ${
-                      severity === s
+                    key={String(opt.value)}
+                    onClick={() => setOccurred(opt.value)}
+                    className={`tap-44 rounded-xl border text-sm transition-colors ${
+                      occurred === opt.value
                         ? "bg-[#5B7C99] text-white border-[#5B7C99]"
                         : "bg-white border-border text-foreground/70"
                     }`}
-                    data-testid={`severity-${s}`}
+                    data-testid={`headache-occurred-${opt.value ? "yes" : "no"}`}
                   >
-                    {s}
+                    {opt.label}
                   </button>
                 ))}
               </div>
             </div>
-            <div>
-              <Label className="text-xs">Duration (hours)</Label>
-              <Input
-                type="number"
-                inputMode="decimal"
-                step="0.5"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                className="tap-44"
-                data-testid="headache-duration-input"
-              />
-            </div>
+            {occurred && (
+              <>
+                <div>
+                  <Label className="text-xs">Severity</Label>
+                  <div className="grid grid-cols-3 gap-2 mt-1">
+                    {["mild", "moderate", "severe"].map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => setSeverity(s)}
+                        className={`tap-44 rounded-xl border text-sm capitalize transition-colors ${
+                          severity === s
+                            ? "bg-[#5B7C99] text-white border-[#5B7C99]"
+                            : "bg-white border-border text-foreground/70"
+                        }`}
+                        data-testid={`severity-${s}`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs">Duration (hours)</Label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    step="0.5"
+                    min="0"
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                    className="tap-44"
+                    data-testid="headache-duration-input"
+                  />
+                </div>
+              </>
+            )}
             <div>
               <Label className="text-xs">Notes</Label>
               <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} data-testid="headache-notes-input" />
@@ -333,9 +414,11 @@ function HeadacheTab() {
 }
 
 export default function Symptoms() {
+  const [params] = useSearchParams();
+  const initialTab = params.get("tab") === "headache" ? "headache" : "fatigue";
   return (
     <MobileLayout subtitle="Track" title="Symptoms">
-      <Tabs defaultValue="fatigue" className="w-full" data-testid="symptoms-tabs">
+      <Tabs defaultValue={initialTab} className="w-full" data-testid="symptoms-tabs">
         <TabsList className="grid grid-cols-2 w-full bg-[#E8E6E2] p-1 rounded-full mb-5 h-auto">
           <TabsTrigger
             value="fatigue"

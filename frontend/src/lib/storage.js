@@ -151,14 +151,39 @@ export const fatigueAPI = {
 };
 
 // ------------- Headache -------------
-// { id, date, severity: 'mild'|'moderate'|'severe', durationHours, notes }
+// { id, date (YYYY-MM-DD), occurred: bool, severity: 'mild'|'moderate'|'severe' | null,
+//   durationHours: number | null, notes: string }
+// Legacy entries without `occurred` are treated as occurred=true on read.
 export const headacheAPI = {
   list() {
-    return readList(KEYS.headache).sort((a, b) => (a.date < b.date ? 1 : -1));
+    return readList(KEYS.headache)
+      .map((h) => ({ ...h, occurred: h.occurred ?? true }))
+      .sort((a, b) => (a.date < b.date ? 1 : -1));
   },
-  add(entry) {
+  byDate(date) {
+    const found = readList(KEYS.headache).find((h) => h.date === date);
+    if (!found) return undefined;
+    return { ...found, occurred: found.occurred ?? true };
+  },
+  // Upsert: one entry per calendar date. Saving overwrites the existing entry
+  // for that date instead of creating a duplicate.
+  setForDate(date, payload) {
     const list = readList(KEYS.headache);
-    list.push({ id: uid(), ...entry });
+    const idx = list.findIndex((h) => h.date === date);
+    const cleaned = {
+      occurred: !!payload.occurred,
+      severity: payload.occurred ? payload.severity || "mild" : null,
+      durationHours:
+        payload.occurred && payload.durationHours != null && payload.durationHours !== ""
+          ? Number(payload.durationHours)
+          : null,
+      notes: payload.notes || "",
+    };
+    if (idx >= 0) {
+      list[idx] = { ...list[idx], date, ...cleaned };
+    } else {
+      list.push({ id: uid(), date, ...cleaned });
+    }
     writeList(KEYS.headache, list);
   },
   remove(id) {
