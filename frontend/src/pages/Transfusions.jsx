@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import MobileLayout from "@/components/MobileLayout";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger, DialogHeader, DialogFooter } from "@/components/ui/dialog";
@@ -15,6 +15,7 @@ import { Plus, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Transfusions() {
+  const navigate = useNavigate();
   const [items, setItems] = useState(() => transfusionsAPI.list());
   const [open, setOpen] = useState(false);
 
@@ -92,7 +93,7 @@ export default function Transfusions() {
             const ds = fmt(day, "yyyy-MM-dd");
             const match = items.find((t) => t.date === ds);
             if (match) {
-              window.location.href = `/transfusions/${match.id}`;
+              navigate(`/transfusions/${match.id}`);
             }
           }}
           showOutsideDays

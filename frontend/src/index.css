@@ -96,7 +96,8 @@ code {
     min-height: 100vh;
     background: #F2F1EF;
     position: relative;
-    padding-bottom: 88px;
+    /* Reserve space for bottom nav (lifted) + Emergent badge */
+    padding-bottom: 148px;
 }
 
 @media (min-width: 768px) {
@@ -108,7 +109,8 @@ code {
 /* Bottom nav lift */
 .bottom-nav {
     position: fixed;
-    bottom: 0;
+    /* Raise above the platform "Made with Emergent" badge so right-side nav items are clickable on mobile */
+    bottom: 56px;
     left: 50%;
     transform: translateX(-50%);
     width: 100%;
@@ -117,6 +119,7 @@ code {
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
     border-top: 1px solid hsl(var(--border));
+    border-bottom: 1px solid hsl(var(--border));
     z-index: 50;
     padding-bottom: env(safe-area-inset-bottom);
 }
