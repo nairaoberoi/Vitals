@@ -1,0 +1,45 @@
+{
+  "summary": "Frontend-only testing of mobile-first thalassemia tracker at 390x844 viewport. All core features (Dashboard, Transfusions CRUD with calendar+Hb dual-line chart, Ferritin, Symptoms fatigue+headache, Diet with day switching, Documents upload/viewer/persistence via IndexedDB, Settings export JSON+CSV, Clear all data) work correctly. Persistence across reload verified. Zero /api network calls — confirmed pure client-side. ONE critical UX bug: the 'Made with Emergent' badge overlay intercepts clicks on right-half bottom-nav items (Symptoms / Diet / Documents) at the 390px target viewport.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "BottomNav (MobileLayout.jsx) vs #emergent-badge",
+        "issue": "At 390x844 mobile viewport (the design target), the platform-injected 'Made with Emergent' badge sits at x=196,y=788,w=178,h=40 — directly on top of the right-half bottom nav (Symptoms, Diet, Docs). Playwright clicks were intercepted by '<a id=\"emergent-badge\">' for >30s. A real user on iPhone would be unable to tap these 3 of 6 bottom-nav buttons. Verified by clicking nav-symptoms without force=True (timeout) and confirmed badge bounding box overlap. Symptoms/Diet/Docs are still reachable via direct URL or quick-action cards on dashboard, but the bottom-nav UX is partially broken.",
+        "selector": "[data-testid='nav-symptoms'], [data-testid='nav-diet'], [data-testid='nav-documents'] vs #emergent-badge",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Bottom nav (390px)",
+        "issues": [
+          "Bottom nav bar should reserve safe-area space above the Emergent badge (e.g., padding-bottom: 48px on .mobile-shell or raising .bottom-nav by ~48px) so the badge doesn't sit on top of nav buttons. Tap-target sizes are otherwise fine (65x55, ≥44px)."
+        ]
+      }
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Fix bottom-nav vs Emergent-badge overlap at 390px viewport: add bottom padding/safe-area-inset to .mobile-shell main content & .bottom-nav so the badge (bottom-right ~178x40) does not intercept pointer events on nav-symptoms / nav-diet / nav-documents. Easiest fix: raise .bottom-nav with `bottom: 48px` (or add `padding-bottom: env(safe-area-inset-bottom, 48px)` and shift badge), OR position bottom-nav above 48px from viewport bottom."
+  ],
+  "critical_code_review_comments": [
+    "Transfusions.jsx uses `window.location.href = ...` for calendar-day navigation (line 95) — this triggers a full page reload instead of using react-router's `useNavigate`. Works, but loses SPA state and is slower. Recommend useNavigate().",
+    "storage.js documentsAPI.add reads File.size before storing — fine, but no quota/error handling; very large uploads may silently fail. Acceptable for MVP.",
+    "Quick-headache button on Dashboard adds a default 'mild' headache with no confirmation/undo — consider toast w/ undo or a small confirm to prevent accidental logs.",
+    "All pages correctly use data-testid attributes; no API calls observed (confirmed via network listener: 0 /api/* requests).",
+    "Color theme verified clean: warm off-white bg, slate blue accent, no purple/violet gradients."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a", "frontend": "95%"},
+  "test_credentials": "n/a (no auth)",
+  "seed_data_creation": "Tests create their own fixture data and clear it via Settings -> Clear all data at the end.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "App is purely client-side (no backend). At 390x844 viewport the Emergent badge overlay blocks nav-symptoms/nav-diet/nav-documents — must be tested at 390px specifically (it does NOT repro at desktop widths because the badge does not overlap nav). Use force=True for any bottom-nav clicks during automated testing OR navigate via direct URL. Confirmed working: transfusion CRUD (incl calendar dot tap → detail → edit/delete), ferritin add/delete + chart + delta, symptoms fatigue tap-to-set + weekly bar + monthly heatmap, headache dialog + weekly chart, diet day-selector with prev/next/today, documents upload (PNG via set_input_files), in-app viewer (image+pdf iframe), persistence after page.reload(), Settings export-json + export-csv (multiple files: transfusions/ferritin/fatigue/headache/diet), clear-all-data wipes both localStorage thal.* keys and IndexedDB. Zero /api calls observed.",
+  "rca of the issue": "Bottom-nav overlap RCA: .bottom-nav is fixed at viewport bottom; the #emergent-badge (platform-injected) is also fixed bottom-right with z-index above the page content. At 390px width the badge horizontal extent (x=196..374) overlaps the right 3 nav items (each ~65px wide starting at x≈195). Mitigation: raise .bottom-nav above the badge OR add right-side padding within the nav to ensure clickable areas of right nav items lie above x>374; cleanest fix is to add `padding-bottom: 56px` to the page shell and `bottom: 48px` (or transform: translateY(-48px)) to .bottom-nav."
+}

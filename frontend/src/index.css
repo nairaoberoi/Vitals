@@ -1,0 +1,221 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    margin: 0;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #F2F1EF;
+    color: #2A2A28;
+    overscroll-behavior-y: none;
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+@layer base {
+    :root {
+        /* Warm off-white background */
+        --background: 36 12% 95%;
+        --foreground: 30 4% 16%;
+
+        --card: 36 18% 98%;
+        --card-foreground: 30 4% 16%;
+
+        --popover: 36 18% 98%;
+        --popover-foreground: 30 4% 16%;
+
+        /* Slate blue accent */
+        --primary: 209 24% 48%;
+        --primary-foreground: 36 18% 98%;
+
+        --secondary: 36 10% 90%;
+        --secondary-foreground: 30 4% 22%;
+
+        --muted: 36 10% 90%;
+        --muted-foreground: 30 6% 45%;
+
+        --accent: 209 24% 92%;
+        --accent-foreground: 209 32% 28%;
+
+        /* Soft, non-alarming "destructive" — muted dusty rose */
+        --destructive: 12 28% 55%;
+        --destructive-foreground: 36 18% 98%;
+
+        --border: 30 8% 86%;
+        --input: 30 8% 86%;
+        --ring: 209 24% 48%;
+
+        --chart-1: 209 24% 48%;
+        --chart-2: 30 18% 55%;
+        --chart-3: 173 22% 42%;
+        --chart-4: 35 35% 60%;
+        --chart-5: 250 14% 55%;
+
+        --radius: 0.875rem;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+    html, body, #root {
+        height: 100%;
+    }
+    h1, h2, h3, h4 {
+        font-family: 'Manrope', sans-serif;
+        letter-spacing: -0.01em;
+    }
+    .font-display {
+        font-family: 'Fraunces', Georgia, serif;
+        font-feature-settings: "ss01" on;
+        letter-spacing: -0.02em;
+    }
+    button, [role="button"] {
+        -webkit-tap-highlight-color: transparent;
+    }
+    /* Numbers tabular */
+    .tabular {
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+/* Mobile shell */
+.mobile-shell {
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: #F2F1EF;
+    position: relative;
+    padding-bottom: 88px;
+}
+
+@media (min-width: 768px) {
+    .mobile-shell {
+        box-shadow: 0 0 0 1px hsl(var(--border)), 0 24px 60px -20px rgba(80, 70, 60, 0.18);
+    }
+}
+
+/* Bottom nav lift */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 430px;
+    background: rgba(242, 241, 239, 0.92);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-top: 1px solid hsl(var(--border));
+    z-index: 50;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Subtle lift card */
+.soft-card {
+    background: #FBFAF8;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+}
+
+/* Calendar overrides for transfusion calendar */
+.rdp {
+    --rdp-cell-size: 42px;
+    --rdp-accent-color: #5B7C99;
+    --rdp-background-color: rgba(91, 124, 153, 0.12);
+    margin: 0;
+}
+.rdp-day_today:not(.rdp-day_selected) {
+    border: 1px solid #5B7C99 !important;
+    border-radius: 999px;
+}
+.transfusion-day {
+    background: #5B7C99 !important;
+    color: #FBFAF8 !important;
+    border-radius: 999px !important;
+    font-weight: 600;
+}
+
+/* Recharts polish */
+.recharts-cartesian-axis-tick text {
+    fill: hsl(var(--muted-foreground));
+    font-size: 11px;
+}
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+    stroke: hsl(var(--border));
+}
+
+/* Fatigue heatmap cell */
+.heat-0 { background: #E8E6E2; }
+.heat-1 { background: #D8DCE3; }
+.heat-2 { background: #B6C2D2; }
+.heat-3 { background: #8FA4BC; }
+.heat-4 { background: #6E8AA6; }
+.heat-5 { background: #4F6F8A; }
+
+/* Tap target safeguard */
+.tap-44 { min-height: 44px; min-width: 44px; }
+
+/* Hide number input spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* Scrollbar polish on desktop */
+@media (min-width: 768px) {
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: hsl(var(--border));
+        border-radius: 999px;
+    }
+}
+
+@layer base {
+    [data-debug-wrapper="true"] {
+        display: contents !important;
+    }
+    [data-debug-wrapper="true"] > * {
+        margin-left: inherit;
+        margin-right: inherit;
+        margin-top: inherit;
+        margin-bottom: inherit;
+        padding-left: inherit;
+        padding-right: inherit;
+        padding-top: inherit;
+        padding-bottom: inherit;
+        column-gap: inherit;
+        row-gap: inherit;
+        gap: inherit;
+        border-left-width: inherit;
+        border-right-width: inherit;
+        border-top-width: inherit;
+        border-bottom-width: inherit;
+        border-left-style: inherit;
+        border-right-style: inherit;
+        border-top-style: inherit;
+        border-bottom-style: inherit;
+        border-left-color: inherit;
+        border-right-color: inherit;
+        border-top-color: inherit;
+        border-bottom-color: inherit;
+    }
+}
