@@ -35,6 +35,9 @@ A single thalassemia major patient using this on their personal phone. No multi-
 - **Per-transfusion attachments** ("Lab slips & related documents") — files (PDF / image) attached to a specific transfusion entry, viewable in-app, persisted via IndexedDB, separate from the standalone Documents section.
 - **PWA support** — `manifest.json` (name "Thal Tracker", short_name "Thal", standalone display, `#F2F1EF` theme + bg, icons 192 / 512 / maskable / 180), `sw.js` service worker (skipWaiting + clients.claim, network-first navigation with offline shell fallback, stale-while-revalidate same-origin assets, cache-first cross-origin). Service worker registered on window load. Apple touch icon + theme-color meta + favicon added. Round-2 testing: **100% pass** including verified offline reads & writes.
 
+**Day 3 (Feb 2026)**
+- **Desferal compliance tracker** inside the Ferritin tab (above the trend chart): weekly strip (M T W T F S S) with live "X / 7 nights this week"; full-month calendar with prev/next nav and small slate dot per Desferal night; tap-to-toggle on both controls; "Selected day" panel with optional `dose (mg)` input that appears only when that day is marked. Neutral filled / unfilled — no red, no green. All data via the storage API (`thal.desferal`). Ready for future fatigue-correlation joins (same date format keys both arrays). Round-3 testing: **100% pass (28/28)**.
+
 ## Prioritized backlog
 - **P1**: Optional reminders ("transfusion due in N days"), basic transfusion-cycle calculation.
 - **P1**: PDF text-search / preview thumbnails for Documents.

@@ -163,6 +163,7 @@ export default function DesferalTracker() {
                 type="number"
                 inputMode="decimal"
                 step="50"
+                min="0"
                 placeholder="dose"
                 value={selectedEntry.dose ?? ""}
                 onChange={(e) => setDose(selected, e.target.value)}
