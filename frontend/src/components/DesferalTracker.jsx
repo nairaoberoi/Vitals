@@ -6,8 +6,6 @@ import { desferalAPI } from "@/lib/storage";
 import { todayISO, fmt, parseISO } from "@/lib/dateUtils";
 import { format, startOfWeek, addDays, isSameMonth } from "date-fns";
 
-const dayInitials = ["M", "T", "W", "T", "F", "S", "S"];
-
 export default function DesferalTracker() {
   const [refresh, setRefresh] = useState(0);
   const [month, setMonth] = useState(new Date());
@@ -81,8 +79,8 @@ export default function DesferalTracker() {
               aria-label={`${format(d, "EEE MMM d")} — ${done ? "done" : "missed"}`}
               aria-pressed={done}
             >
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
-                {dayInitials[i]}
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 font-normal">
+                {format(d, "cccccc")}
               </span>
               <span
                 className={`w-7 h-7 rounded-full border transition-colors ${

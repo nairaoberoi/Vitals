@@ -9,7 +9,7 @@ import { dietAPI } from "@/lib/storage";
 import { todayISO, fmt } from "@/lib/dateUtils";
 import { Plus, ChevronLeft, ChevronRight, Trash2, Utensils } from "lucide-react";
 import { addDays, subDays, format, startOfWeek } from "date-fns";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { toast } from "sonner";
 
 const meals = ["Breakfast", "Lunch", "Dinner", "Snack"];
@@ -20,7 +20,6 @@ const OUT_COLOR = "#dee5eb";
 export default function Diet() {
   const [refresh, setRefresh] = useState(0);
   const [viewDate, setViewDate] = useState(new Date());
-  const [tooltipPos, setTooltipPos] = useState(null);
   const viewDateStr = format(viewDate, "yyyy-MM-dd");
 
   const [open, setOpen] = useState(false);
@@ -174,48 +173,10 @@ export default function Diet() {
         <h2 className="text-sm font-medium mb-3">This week</h2>
         <div className="h-40" data-testid="diet-weekly-chart">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={weekData}
-              margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
-              onMouseMove={(state) => {
-                if (state && state.isTooltipActive && state.activeCoordinate) {
-                  setTooltipPos({
-                    x: state.activeCoordinate.x,
-                    y: state.activeCoordinate.y,
-                  });
-                } else {
-                  setTooltipPos(null);
-                }
-              }}
-              onMouseLeave={() => setTooltipPos(null)}
-            >
+            <BarChart data={weekData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="day" tickLine={false} axisLine={false} />
               <YAxis hide allowDecimals={false} />
-              <Tooltip
-                cursor={{ fill: "rgba(91,124,153,0.06)" }}
-                position={
-                  tooltipPos
-                    ? { x: tooltipPos.x - 55, y: Math.max(0, tooltipPos.y - 34) }
-                    : undefined
-                }
-                isAnimationActive={false}
-                content={({ active, payload }) => {
-                  if (!active || !payload || !payload.length) return null;
-                  const home = payload.find((p) => p.dataKey === "Home")?.value || 0;
-                  const out = payload.find((p) => p.dataKey === "Out")?.value || 0;
-                  return (
-                    <div
-                      className="bg-[#FBFAF8] border border-border rounded-lg px-2.5 py-1 text-xs whitespace-nowrap shadow-sm"
-                      data-testid="diet-tooltip"
-                    >
-                      <span className="tabular text-foreground">Home {home}</span>
-                      <span className="text-muted-foreground"> · </span>
-                      <span className="tabular text-foreground">Out {out}</span>
-                    </div>
-                  );
-                }}
-              />
               <Bar dataKey="Home" stackId="meals" fill={HOME_COLOR} radius={[0, 0, 0, 0]} />
               <Bar dataKey="Out" stackId="meals" fill={OUT_COLOR} radius={[6, 6, 0, 0]} />
             </BarChart>

@@ -70,6 +70,10 @@ A single thalassemia major patient using this on their personal phone. No multi-
 - **Dashboard quick-fatigue scale** now reads **"Fresh"** / **"Wiped"** under the 1–5 scale, matching the Symptoms tab vocabulary (was "Very low" / "Severe").
 - **Diet weekly stacked bar chart**: tooltip now **anchors to the hovered bar's center** (snapped via Recharts `activeCoordinate` captured in `onMouseMove` and applied through the `position` prop), instead of floating beside the cursor. Tooltip clears on `onMouseLeave`. Verified by hovering different bars and moving off-chart.
 
+**Day 9 (Feb 2026) — calendar header consistency + diet chart display-only**
+- **Diet weekly stacked bar chart** is now **display-only**: removed `<Tooltip>` (and its custom positioning logic, `tooltipPos` state, `onMouseMove` / `onMouseLeave` handlers, and the `Tooltip` import). No hover, no tap, no popup or label appears when interacting with the bars.
+- **Calendar day headers unified** with DayPicker's default. Both DayPicker instances (Transfusions, Desferal monthly) already used the default formatter — left untouched. The **Desferal weekly compliance strip** previously rendered hand-written single-letter day labels (`["M","T","W","T","F","S","S"]`); replaced with `format(d, "cccccc")` (the same date-fns token DayPicker uses internally) so the strip now reads `MO TU WE TH FR SA SU` — pixel-identical to the calendar header below it.
+
 ## Prioritized backlog
 - **P1**: Optional reminders ("transfusion due in N days"), basic transfusion-cycle calculation.
 - **P1**: PDF text-search / preview thumbnails for Documents.
