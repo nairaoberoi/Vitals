@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { dietAPI } from "@/lib/storage";
 import { todayISO, fmt } from "@/lib/dateUtils";
-import { Plus, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Trash2, Utensils } from "lucide-react";
 import { addDays, subDays, format, startOfWeek } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from "recharts";
 import { toast } from "sonner";
@@ -179,27 +179,20 @@ export default function Diet() {
               <YAxis hide allowDecimals={false} />
               <Tooltip
                 cursor={{ fill: "rgba(91,124,153,0.06)" }}
-                content={({ active, payload, label }) => {
+                allowEscapeViewBox={{ x: false, y: false }}
+                offset={10}
+                content={({ active, payload }) => {
                   if (!active || !payload || !payload.length) return null;
                   const home = payload.find((p) => p.dataKey === "Home")?.value || 0;
                   const out = payload.find((p) => p.dataKey === "Out")?.value || 0;
                   return (
-                    <div className="bg-[#FBFAF8] border border-border rounded-xl px-3 py-2 text-xs">
-                      <div className="font-medium mb-1 text-foreground">{label}</div>
-                      <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <span
-                          className="inline-block w-2 h-2 rounded-full"
-                          style={{ background: HOME_COLOR }}
-                        />
-                        <span>Home: <span className="tabular text-foreground">{home}</span></span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-muted-foreground mt-0.5">
-                        <span
-                          className="inline-block w-2 h-2 rounded-full border border-border"
-                          style={{ background: OUT_COLOR }}
-                        />
-                        <span>Out: <span className="tabular text-foreground">{out}</span></span>
-                      </div>
+                    <div
+                      className="bg-[#FBFAF8] border border-border rounded-lg px-2.5 py-1 text-xs whitespace-nowrap shadow-sm"
+                      data-testid="diet-tooltip"
+                    >
+                      <span className="tabular text-foreground">Home {home}</span>
+                      <span className="text-muted-foreground"> · </span>
+                      <span className="tabular text-foreground">Out {out}</span>
                     </div>
                   );
                 }}

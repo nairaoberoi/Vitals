@@ -14,7 +14,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
-const fatigueLabels = ["", "Very low", "Low", "Moderate", "High", "Severe"];
+const fatigueLabels = ["", "Fresh", "", "", "", "Wiped"];
 
 function FatigueTab() {
   const [refresh, setRefresh] = useState(0);
@@ -78,9 +78,12 @@ function FatigueTab() {
             );
           })}
         </div>
-        <div className="flex justify-between text-[10px] text-muted-foreground px-1">
-          <span>Very low</span>
-          <span>Severe</span>
+        <div className="grid grid-cols-5 gap-2 px-0">
+          <span className="text-[10px] text-muted-foreground text-center">Fresh</span>
+          <span />
+          <span />
+          <span />
+          <span className="text-[10px] text-muted-foreground text-center">Wiped</span>
         </div>
         {todayEntry && (
           <div className="text-xs text-muted-foreground mt-3" data-testid="fatigue-today-label">
@@ -125,11 +128,11 @@ function FatigueTab() {
           ))}
         </div>
         <div className="flex items-center gap-1.5 mt-3 text-[10px] text-muted-foreground">
-          <span>Less</span>
+          <span>Fresh</span>
           {[0, 1, 2, 3, 4, 5].map((n) => (
             <span key={n} className={`heat-${n} w-3 h-3 rounded-sm`} />
           ))}
-          <span>More</span>
+          <span>Wiped</span>
         </div>
       </section>
 
@@ -141,7 +144,9 @@ function FatigueTab() {
               <li key={f.id} className="soft-card p-3 flex items-center justify-between" data-testid={`fatigue-item-${f.id}`}>
                 <div>
                   <div className="text-sm">{fmt(f.date, "EEE, MMM d")}</div>
-                  <div className="text-[11px] text-muted-foreground">{fatigueLabels[f.level]} ({f.level}/5)</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {fatigueLabels[f.level] && <>{fatigueLabels[f.level]} · </>}{f.level}/5
+                  </div>
                 </div>
                 <button onClick={() => removeEntry(f.id)} aria-label="Delete" className="tap-44 w-9 h-9 grid place-items-center text-muted-foreground hover:text-foreground">
                   <Trash2 className="w-4 h-4" strokeWidth={1.5} />
@@ -159,7 +164,6 @@ function HeadacheTab() {
   const [refresh, setRefresh] = useState(0);
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(todayISO());
-  const [occurred, setOccurred] = useState(true);
   const [severity, setSeverity] = useState("mild");
   const [duration, setDuration] = useState("");
   const [notes, setNotes] = useState("");
@@ -176,12 +180,10 @@ function HeadacheTab() {
   const loadForDate = (d) => {
     const existing = headacheAPI.byDate(d);
     if (existing) {
-      setOccurred(existing.occurred);
       setSeverity(existing.severity || "mild");
       setDuration(existing.durationHours != null ? String(existing.durationHours) : "");
       setNotes(existing.notes || "");
     } else {
-      setOccurred(true);
       setSeverity("mild");
       setDuration("");
       setNotes("");
@@ -200,7 +202,7 @@ function HeadacheTab() {
     loadForDate(newDate);
   };
 
-  // Frequency by week (last 8 weeks) — only counts days where a headache occurred
+  // Frequency by week (last 8 weeks) — counts logged headache days
   const weekly = useMemo(() => {
     const buckets = {};
     const now = new Date();
@@ -212,7 +214,6 @@ function HeadacheTab() {
     }
     const keys = Object.keys(buckets);
     items.forEach((h) => {
-      if (!h.occurred) return;
       const hd = new Date(h.date);
       const diffDays = Math.floor((now - hd) / 86400000);
       if (diffDays > 56 || diffDays < 0) return;
@@ -224,14 +225,13 @@ function HeadacheTab() {
 
   const save = () => {
     headacheAPI.setForDate(date, {
-      occurred,
       severity,
       durationHours: duration,
       notes,
     });
     setOpen(false);
     setRefresh((k) => k + 1);
-    toast.success(occurred ? "Saved" : "Saved — no headache");
+    toast.success("Saved");
   };
 
   const remove = (id) => {
@@ -257,7 +257,7 @@ function HeadacheTab() {
       </Button>
       {todayEntry && (
         <p className="text-[11px] text-muted-foreground -mt-3 px-1" data-testid="headache-today-status">
-          Today: {todayEntry.occurred ? `${todayEntry.severity}${todayEntry.durationHours != null ? ` · ${todayEntry.durationHours}h` : ""}` : "no headache"}
+          Today: {todayEntry.severity}{todayEntry.durationHours != null ? ` · ${todayEntry.durationHours}h` : ""}
         </p>
       )}
 
@@ -294,21 +294,15 @@ function HeadacheTab() {
               <li key={h.id} className="soft-card p-4 flex items-start justify-between gap-3" data-testid={`headache-item-${h.id}`}>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    {h.occurred ? (
-                      <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${severityColor[h.severity] || severityColor.mild}`}>
-                        {h.severity}
-                      </span>
-                    ) : (
-                      <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#E0E5EC] text-muted-foreground">
-                        no headache
-                      </span>
-                    )}
+                    <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${severityColor[h.severity] || severityColor.mild}`}>
+                      {h.severity}
+                    </span>
                     <span className="text-xs text-muted-foreground">{fmt(h.date, "EEE, MMM d")}</span>
                     {h.date === todayISOStr && (
                       <span className="text-[10px] uppercase tracking-wider text-[#5B7C99]">today</span>
                     )}
                   </div>
-                  {h.occurred && h.durationHours != null && (
+                  {h.durationHours != null && (
                     <div className="text-[11px] text-muted-foreground">
                       Duration: {h.durationHours}h
                     </div>
@@ -344,63 +338,37 @@ function HeadacheTab() {
               />
             </div>
             <div>
-              <Label className="text-xs">Did you have a headache?</Label>
-              <div className="grid grid-cols-2 gap-2 mt-1">
-                {[
-                  { value: true, label: "Yes" },
-                  { value: false, label: "No" },
-                ].map((opt) => (
+              <Label className="text-xs">Severity</Label>
+              <div className="grid grid-cols-3 gap-2 mt-1">
+                {["mild", "moderate", "severe"].map((s) => (
                   <button
-                    key={String(opt.value)}
-                    onClick={() => setOccurred(opt.value)}
-                    className={`tap-44 rounded-xl border text-sm transition-colors ${
-                      occurred === opt.value
+                    key={s}
+                    onClick={() => setSeverity(s)}
+                    className={`tap-44 rounded-xl border text-sm capitalize transition-colors ${
+                      severity === s
                         ? "bg-[#5B7C99] text-white border-[#5B7C99]"
                         : "bg-white border-border text-foreground/70"
                     }`}
-                    data-testid={`headache-occurred-${opt.value ? "yes" : "no"}`}
+                    data-testid={`severity-${s}`}
                   >
-                    {opt.label}
+                    {s}
                   </button>
                 ))}
               </div>
             </div>
-            {occurred && (
-              <>
-                <div>
-                  <Label className="text-xs">Severity</Label>
-                  <div className="grid grid-cols-3 gap-2 mt-1">
-                    {["mild", "moderate", "severe"].map((s) => (
-                      <button
-                        key={s}
-                        onClick={() => setSeverity(s)}
-                        className={`tap-44 rounded-xl border text-sm capitalize transition-colors ${
-                          severity === s
-                            ? "bg-[#5B7C99] text-white border-[#5B7C99]"
-                            : "bg-white border-border text-foreground/70"
-                        }`}
-                        data-testid={`severity-${s}`}
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs">Duration (hours)</Label>
-                  <Input
-                    type="number"
-                    inputMode="decimal"
-                    step="0.5"
-                    min="0"
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                    className="tap-44"
-                    data-testid="headache-duration-input"
-                  />
-                </div>
-              </>
-            )}
+            <div>
+              <Label className="text-xs">Duration (hours)</Label>
+              <Input
+                type="number"
+                inputMode="decimal"
+                step="0.5"
+                min="0"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                className="tap-44"
+                data-testid="headache-duration-input"
+              />
+            </div>
             <div>
               <Label className="text-xs">Notes</Label>
               <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} data-testid="headache-notes-input" />

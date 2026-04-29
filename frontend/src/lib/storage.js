@@ -151,19 +151,22 @@ export const fatigueAPI = {
 };
 
 // ------------- Headache -------------
-// { id, date (YYYY-MM-DD), occurred: bool, severity: 'mild'|'moderate'|'severe' | null,
+// One entry per calendar date. Absence of an entry on a date means
+// "no headache that day" — no explicit "no" record is needed.
+// { id, date (YYYY-MM-DD), severity: 'mild'|'moderate'|'severe',
 //   durationHours: number | null, notes: string }
-// Legacy entries without `occurred` are treated as occurred=true on read.
 export const headacheAPI = {
   list() {
+    // Filter out any legacy explicit "no" records (occurred=false) — those are
+    // now redundant since absence implies no headache.
     return readList(KEYS.headache)
-      .map((h) => ({ ...h, occurred: h.occurred ?? true }))
+      .filter((h) => h.occurred !== false && h.severity)
       .sort((a, b) => (a.date < b.date ? 1 : -1));
   },
   byDate(date) {
     const found = readList(KEYS.headache).find((h) => h.date === date);
-    if (!found) return undefined;
-    return { ...found, occurred: found.occurred ?? true };
+    if (!found || found.occurred === false || !found.severity) return undefined;
+    return found;
   },
   // Upsert: one entry per calendar date. Saving overwrites the existing entry
   // for that date instead of creating a duplicate.
@@ -171,16 +174,15 @@ export const headacheAPI = {
     const list = readList(KEYS.headache);
     const idx = list.findIndex((h) => h.date === date);
     const cleaned = {
-      occurred: !!payload.occurred,
-      severity: payload.occurred ? payload.severity || "mild" : null,
+      severity: payload.severity || "mild",
       durationHours:
-        payload.occurred && payload.durationHours != null && payload.durationHours !== ""
+        payload.durationHours != null && payload.durationHours !== ""
           ? Number(payload.durationHours)
           : null,
       notes: payload.notes || "",
     };
     if (idx >= 0) {
-      list[idx] = { ...list[idx], date, ...cleaned };
+      list[idx] = { id: list[idx].id, date, ...cleaned };
     } else {
       list.push({ id: uid(), date, ...cleaned });
     }

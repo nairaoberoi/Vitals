@@ -4,9 +4,9 @@ import MobileLayout from "@/components/MobileLayout";
 import { Button } from "@/components/ui/button";
 import { transfusionsAPI, ferritinAPI, fatigueAPI, dietAPI } from "@/lib/storage";
 import { todayISO, daysSince, fmt, avgIntervalDays } from "@/lib/dateUtils";
-import { ArrowUpRight, Droplet, Activity, Sparkle, ChevronRight } from "lucide-react";
+import { ArrowUpRight, Utensils, Activity, Sparkle, ChevronRight } from "lucide-react";
 
-const fatigueLabels = ["", "Very low", "Low", "Moderate", "High", "Severe"];
+const fatigueLabels = ["", "Fresh", "", "", "", "Wiped"];
 
 export default function Dashboard() {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -109,7 +109,7 @@ export default function Dashboard() {
               {fatigueToday && <span className="text-xs text-muted-foreground">/ 5</span>}
             </div>
             <div className="text-[11px] text-muted-foreground mt-0.5">
-              {fatigueToday ? fatigueLabels[fatigueToday.level] : "not logged"}
+              {fatigueToday ? (fatigueLabels[fatigueToday.level] || `Level ${fatigueToday.level}`) : "not logged"}
             </div>
           </div>
         </div>
@@ -167,7 +167,7 @@ export default function Dashboard() {
             data-testid="quick-diet-btn"
             className="tap-44 soft-card p-3 flex flex-col items-start gap-1 text-left hover:border-foreground/30 transition-colors"
           >
-            <Droplet className="w-4 h-4 text-[#5B7C99]" strokeWidth={1.5} />
+            <Utensils className="w-4 h-4 text-[#5B7C99]" strokeWidth={1.5} />
             <span className="text-xs font-medium">Meal</span>
             <span className="text-[10px] text-muted-foreground">Add entry</span>
           </Link>
