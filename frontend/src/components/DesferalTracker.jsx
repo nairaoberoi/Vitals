@@ -12,6 +12,7 @@ export default function DesferalTracker() {
   const [selected, setSelected] = useState(todayISO());
 
   // Force re-read on every refresh tick
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const allEntries = useMemo(() => desferalAPI.list(), [refresh]);
   const doneDates = useMemo(() => allEntries.map((e) => e.date), [allEntries]);
   const doneSet = useMemo(() => new Set(doneDates), [doneDates]);

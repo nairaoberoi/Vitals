@@ -26,6 +26,7 @@ export default function Documents() {
 
   const [viewer, setViewer] = useState(null); // { url, mime, filename }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const meta = useMemo(() => documentsAPI.listMeta(), [refresh]);
   const filtered = useMemo(
     () => (filter === "All" ? meta : meta.filter((m) => m.category === filter)),

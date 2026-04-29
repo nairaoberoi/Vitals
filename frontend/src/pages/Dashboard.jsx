@@ -12,9 +12,11 @@ export default function Dashboard() {
   const [refreshKey, setRefreshKey] = useState(0);
   const today = todayISO();
 
+  /* eslint-disable react-hooks/exhaustive-deps */
   const transfusions = useMemo(() => transfusionsAPI.list(), [refreshKey]);
   const ferritin = useMemo(() => ferritinAPI.list(), [refreshKey]);
   const fatigueToday = useMemo(() => fatigueAPI.byDate(today), [refreshKey, today]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   const lastTransfusion = transfusions[0];
   const lastFerritin = ferritin[0];
@@ -43,6 +45,7 @@ export default function Dashboard() {
   };
 
   // Quick add diet (just a placeholder; full entry on Diet page)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const todaysDietCount = useMemo(() => dietAPI.byDate(today).length, [refreshKey, today]);
 
   const noEntryToday = !fatigueToday && todaysDietCount === 0;

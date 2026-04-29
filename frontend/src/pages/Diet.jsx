@@ -29,6 +29,7 @@ export default function Diet() {
   const [text, setText] = useState("");
   const [notes, setNotes] = useState("");
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const entries = useMemo(() => dietAPI.byDate(viewDateStr), [refresh, viewDateStr]);
 
   // Current week (Mon-Sun) stats — always reflects this week regardless of viewDate

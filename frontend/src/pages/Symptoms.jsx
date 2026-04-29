@@ -33,6 +33,7 @@ function FatigueTab() {
       const e = fatigueAPI.list().find((f) => f.date === d);
       return { date: format(new Date(d), "cccccc").toUpperCase(), level: e?.level ?? 0 };
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refresh]);
 
   // Monthly heatmap
@@ -45,8 +46,10 @@ function FatigueTab() {
       const e = list.find((f) => f.date === ds);
       return { date: d, level: e?.level ?? 0, hasEntry: !!e };
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refresh]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const all = useMemo(() => fatigueAPI.list(), [refresh]);
   const removeEntry = (id) => {
     fatigueAPI.remove(id);
@@ -168,10 +171,12 @@ function HeadacheTab() {
   const [duration, setDuration] = useState("");
   const [notes, setNotes] = useState("");
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const items = useMemo(() => headacheAPI.list(), [refresh]);
   const todayISOStr = todayISO();
   const todayEntry = useMemo(
     () => headacheAPI.byDate(todayISOStr),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [refresh, todayISOStr]
   );
 
