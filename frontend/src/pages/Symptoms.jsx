@@ -31,7 +31,7 @@ function FatigueTab() {
     const days = lastNDays(7);
     return days.map((d) => {
       const e = fatigueAPI.list().find((f) => f.date === d);
-      return { date: format(new Date(d), "EEE"), level: e?.level ?? 0 };
+      return { date: format(new Date(d), "cccccc").toUpperCase(), level: e?.level ?? 0 };
     });
   }, [refresh]);
 

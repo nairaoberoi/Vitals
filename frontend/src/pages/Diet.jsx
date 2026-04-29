@@ -43,7 +43,7 @@ export default function Diet() {
       const dayEntries = all.filter((e) => e.date === ds);
       const home = dayEntries.filter((e) => (e.location || "Home") === "Home").length;
       const out = dayEntries.filter((e) => (e.location || "Home") === "Out").length;
-      return { day: format(d, "EEEEE"), date: ds, Home: home, Out: out };
+      return { day: format(d, "cccccc").toUpperCase(), date: ds, Home: home, Out: out };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refresh, weekDays]);
