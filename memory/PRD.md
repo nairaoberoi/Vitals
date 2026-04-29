@@ -23,11 +23,17 @@ A single thalassemia major patient using this on their personal phone. No multi-
 6. **Documents** — file cabinet for PDFs/images by category (MRI / LFT / CBC / Endocrine / Other), sorted desc by test date, filterable, in-app viewer.
 7. **Settings** — Export JSON, Export CSV (per data type), Clear all data.
 
-## What's been implemented (Feb 2026, day 1)
-- All 7 sections above, fully functional, no mocks.
+## What's been implemented (Feb 2026)
+**Day 1 (Feb 2026)**
+- All 7 sections (Dashboard / Transfusions / Ferritin / Symptoms / Diet / Documents / Settings), fully functional, no mocks.
 - 6-item fixed bottom nav lifted above the platform "Made with Emergent" badge.
 - Persistence verified across page reloads (incl. uploaded files via IndexedDB).
-- End-to-end frontend test at 390×844 viewport — 95% pass; the one HIGH issue (badge / nav overlap) was fixed and re-verified.
+- End-to-end frontend test at 390×844 viewport — 95% pass; HIGH issue (badge / nav overlap) fixed and re-verified.
+
+**Day 2 (Feb 2026)**
+- **Quiet next-transfusion estimate** on dashboard — average gap of last 3 transfusion dates; shown as plain secondary text only if ≥2 transfusions are logged. Falls back to "Around your typical interval now…" when overdue. No icon, no color change, no alert styling.
+- **Per-transfusion attachments** ("Lab slips & related documents") — files (PDF / image) attached to a specific transfusion entry, viewable in-app, persisted via IndexedDB, separate from the standalone Documents section.
+- **PWA support** — `manifest.json` (name "Thal Tracker", short_name "Thal", standalone display, `#F2F1EF` theme + bg, icons 192 / 512 / maskable / 180), `sw.js` service worker (skipWaiting + clients.claim, network-first navigation with offline shell fallback, stale-while-revalidate same-origin assets, cache-first cross-origin). Service worker registered on window load. Apple touch icon + theme-color meta + favicon added. Round-2 testing: **100% pass** including verified offline reads & writes.
 
 ## Prioritized backlog
 - **P1**: Optional reminders ("transfusion due in N days"), basic transfusion-cycle calculation.
