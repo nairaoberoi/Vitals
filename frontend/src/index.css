@@ -133,7 +133,7 @@ code {
 
 /* Calendar overrides for transfusion calendar */
 .rdp {
-    --rdp-cell-size: 42px;
+    --rdp-cell-size: 40px;
     --rdp-accent-color: #5B7C99;
     --rdp-background-color: rgba(91, 124, 153, 0.12);
     margin: 0;
@@ -241,4 +241,10 @@ input[type="number"] {
         border-top-color: inherit;
         border-bottom-color: inherit;
     }
+}
+
+/* Cell-size custom property is exposed at :root so siblings of the calendar
+   (e.g. the Desferal weekly strip) can align column-by-column. */
+:root {
+    --rdp-cell-size: 40px;
 }

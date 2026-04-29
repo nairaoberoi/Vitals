@@ -57,6 +57,15 @@ A single thalassemia major patient using this on their personal phone. No multi-
 - `dietAPI` now treats legacy entries without a `location` field as `"Home"` for backward compatibility. CSV export gained a `location` column.
 - Round-6 test: 100% functional pass; one cosmetic margin tweak applied (Monday tick label was clipped due to negative `margin.left`).
 
+**Day 7 (Feb 2026) — symmetry / cosmetics pass**
+- Ferritin tab subtitle changed from "IRON" → "LOG".
+- Desferal weekly strip pixel-aligned with the monthly calendar — promoted `--rdp-cell-size: 40px` to `:root` (was scoped to `.rdp` only) so the strip can read it; matched both to 40px each. Verified column centers diff `[0,0,0,0,0,0,0]`.
+- Both calendars (transfusion + desferal) now use DayPicker's default caption (chevron prev/next + month label), `weekStartsOn=1`, `showOutsideDays=false`, and are centered via `flex justify-center`.
+- All bar charts (fatigue, headache, diet) unified: `margin={top:8,right:8,left:0,bottom:0}`, hidden YAxis, `h-40`, same tooltip frame.
+- Both line charts (Hb, Ferritin) unified: same margins, taller (`h-48`), YAxis widened to fit 3-decimal Hb (`width=40`) and 4-digit ferritin (`width=48`) — no more clipped tick labels.
+- Diet bar chart tooltip rewritten: shows day label + colored Home dot with value + colored Out dot with value (was previously not reflecting Home/Out clearly).
+- Round-7 testing: 92% on first pass (single critical alignment bug found by testing agent — `--rdp-cell-size` scope), fixed and re-verified to pixel-perfect alignment.
+
 ## Prioritized backlog
 - **P1**: Optional reminders ("transfusion due in N days"), basic transfusion-cycle calculation.
 - **P1**: PDF text-search / preview thumbnails for Documents.

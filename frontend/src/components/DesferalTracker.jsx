@@ -77,7 +77,7 @@ export default function DesferalTracker() {
               onClick={() => toggle(ds)}
               data-testid={`desferal-day-${ds}`}
               className="flex flex-col items-center justify-center group"
-              style={{ width: "var(--rdp-cell-size)", minHeight: 56 }}
+              style={{ width: "var(--rdp-cell-size, 40px)", minHeight: 56 }}
               aria-label={`${format(d, "EEE MMM d")} — ${done ? "done" : "missed"}`}
               aria-pressed={done}
             >
