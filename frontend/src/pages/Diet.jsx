@@ -20,6 +20,7 @@ const OUT_COLOR = "#dee5eb";
 export default function Diet() {
   const [refresh, setRefresh] = useState(0);
   const [viewDate, setViewDate] = useState(new Date());
+  const [tooltipPos, setTooltipPos] = useState(null);
   const viewDateStr = format(viewDate, "yyyy-MM-dd");
 
   const [open, setOpen] = useState(false);
@@ -173,14 +174,32 @@ export default function Diet() {
         <h2 className="text-sm font-medium mb-3">This week</h2>
         <div className="h-40" data-testid="diet-weekly-chart">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={weekData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <BarChart
+              data={weekData}
+              margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+              onMouseMove={(state) => {
+                if (state && state.isTooltipActive && state.activeCoordinate) {
+                  setTooltipPos({
+                    x: state.activeCoordinate.x,
+                    y: state.activeCoordinate.y,
+                  });
+                } else {
+                  setTooltipPos(null);
+                }
+              }}
+              onMouseLeave={() => setTooltipPos(null)}
+            >
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="day" tickLine={false} axisLine={false} />
               <YAxis hide allowDecimals={false} />
               <Tooltip
                 cursor={{ fill: "rgba(91,124,153,0.06)" }}
-                allowEscapeViewBox={{ x: false, y: false }}
-                offset={10}
+                position={
+                  tooltipPos
+                    ? { x: tooltipPos.x - 55, y: Math.max(0, tooltipPos.y - 34) }
+                    : undefined
+                }
+                isAnimationActive={false}
                 content={({ active, payload }) => {
                   if (!active || !payload || !payload.length) return null;
                   const home = payload.find((p) => p.dataKey === "Home")?.value || 0;

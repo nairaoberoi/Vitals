@@ -144,8 +144,8 @@ export default function Dashboard() {
           })}
         </div>
         <div className="flex justify-between px-1 mt-1.5 text-[10px] text-muted-foreground">
-          <span>Very low</span>
-          <span>Severe</span>
+          <span>Fresh</span>
+          <span>Wiped</span>
         </div>
       </section>
 

@@ -66,6 +66,10 @@ A single thalassemia major patient using this on their personal phone. No multi-
 - Diet bar chart tooltip rewritten: shows day label + colored Home dot with value + colored Out dot with value (was previously not reflecting Home/Out clearly).
 - Round-7 testing: 92% on first pass (single critical alignment bug found by testing agent — `--rdp-cell-size` scope), fixed and re-verified to pixel-perfect alignment.
 
+**Day 8 (Feb 2026) — fatigue label consistency + diet tooltip anchoring**
+- **Dashboard quick-fatigue scale** now reads **"Fresh"** / **"Wiped"** under the 1–5 scale, matching the Symptoms tab vocabulary (was "Very low" / "Severe").
+- **Diet weekly stacked bar chart**: tooltip now **anchors to the hovered bar's center** (snapped via Recharts `activeCoordinate` captured in `onMouseMove` and applied through the `position` prop), instead of floating beside the cursor. Tooltip clears on `onMouseLeave`. Verified by hovering different bars and moving off-chart.
+
 ## Prioritized backlog
 - **P1**: Optional reminders ("transfusion due in N days"), basic transfusion-cycle calculation.
 - **P1**: PDF text-search / preview thumbnails for Documents.
