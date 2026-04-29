@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import MobileLayout from "@/components/MobileLayout";
+import DesferalTracker from "@/components/DesferalTracker";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -100,6 +101,9 @@ export default function Ferritin() {
           )}
         </div>
       </section>
+
+      {/* Desferal compliance — placed above the trend chart inside the Ferritin tab */}
+      <DesferalTracker />
 
       {/* Chart */}
       <section className="soft-card p-4 mb-5" data-testid="ferritin-chart-section">

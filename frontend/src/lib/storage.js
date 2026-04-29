@@ -9,6 +9,7 @@ const KEYS = {
   headache: "thal.headache",
   diet: "thal.diet",
   documentsMeta: "thal.documents.meta",
+  desferal: "thal.desferal",
 };
 
 function readList(key) {
@@ -189,6 +190,48 @@ export const dietAPI = {
   },
 };
 
+// ------------- Desferal compliance -------------
+// Each "done" night is one entry; missed nights are simply absent (no entry).
+// { id, date (YYYY-MM-DD), done: true, dose: number | null, createdAt }
+// NOTE: dates are stored alongside fatigue dates so a future correlation view
+// can join `fatigueAPI.list()` and `desferalAPI.list()` on `date`.
+export const desferalAPI = {
+  list() {
+    return readList(KEYS.desferal).sort((a, b) => (a.date < b.date ? 1 : -1));
+  },
+  byDate(date) {
+    return readList(KEYS.desferal).find((d) => d.date === date);
+  },
+  // Toggles a date between done/missed. Tapping a missed day creates a "done"
+  // entry; tapping a done day removes it (back to missed = no entry).
+  toggle(date) {
+    const list = readList(KEYS.desferal);
+    const idx = list.findIndex((d) => d.date === date);
+    if (idx >= 0) {
+      list.splice(idx, 1);
+    } else {
+      list.push({
+        id: uid(),
+        date,
+        done: true,
+        dose: null,
+        createdAt: new Date().toISOString(),
+      });
+    }
+    writeList(KEYS.desferal, list);
+  },
+  setDose(date, dose) {
+    const list = readList(KEYS.desferal);
+    const idx = list.findIndex((d) => d.date === date);
+    if (idx < 0) return;
+    list[idx] = {
+      ...list[idx],
+      dose: dose === "" || dose == null ? null : Number(dose),
+    };
+    writeList(KEYS.desferal, list);
+  },
+};
+
 // ------------- Documents (IndexedDB for blobs + meta in localStorage) -------------
 const DB_NAME = "thal_docs";
 const STORE = "files";
@@ -268,6 +311,7 @@ export function exportAllJSON() {
     fatigue: readList(KEYS.fatigue),
     headache: readList(KEYS.headache),
     diet: readList(KEYS.diet),
+    desferal: readList(KEYS.desferal),
     documents: readList(KEYS.documentsMeta), // metadata only; file blobs are device-local
   };
 }

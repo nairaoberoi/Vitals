@@ -149,6 +149,26 @@ code {
     font-weight: 600;
 }
 
+/* Desferal: small filled dot below the day number */
+.desferal-day {
+    position: relative;
+}
+.desferal-day::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 4px;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: #5B7C99;
+}
+/* If a day is both a transfusion day AND a desferal day, keep the dot visible */
+.transfusion-day.desferal-day::after {
+    background: #FBFAF8;
+}
+
 /* Recharts polish */
 .recharts-cartesian-axis-tick text {
     fill: hsl(var(--muted-foreground));

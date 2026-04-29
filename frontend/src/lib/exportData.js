@@ -106,4 +106,17 @@ export function exportCSV() {
     ),
     "text/csv"
   );
+
+  downloadFile(
+    `desferal-${date}.csv`,
+    toCSV(
+      data.desferal.map((d) => ({
+        date: d.date,
+        done: d.done ? "yes" : "no",
+        dose_mg: d.dose ?? "",
+      })),
+      ["date", "done", "dose_mg"]
+    ),
+    "text/csv"
+  );
 }
