@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import MobileLayout from "@/components/MobileLayout";
 import { Button } from "@/components/ui/button";
 import { transfusionsAPI, ferritinAPI, fatigueAPI, headacheAPI, dietAPI } from "@/lib/storage";
-import { todayISO, daysSince, fmt } from "@/lib/dateUtils";
+import { todayISO, daysSince, fmt, avgIntervalDays } from "@/lib/dateUtils";
 import { ArrowUpRight, Droplet, Activity, Sparkle, ChevronRight } from "lucide-react";
 
 const fatigueLabels = ["", "Very low", "Low", "Moderate", "High", "Severe"];
@@ -19,6 +19,22 @@ export default function Dashboard() {
   const lastTransfusion = transfusions[0];
   const lastFerritin = ferritin[0];
   const sinceLast = lastTransfusion ? daysSince(lastTransfusion.date) : null;
+
+  // Quiet next-transfusion estimate based on average of last 3 intervals.
+  // Only shown if at least 2 transfusions are logged.
+  const avgInterval = useMemo(
+    () => avgIntervalDays(transfusions.map((t) => t.date), 3),
+    [transfusions]
+  );
+  let estimateLine = null;
+  if (avgInterval != null && sinceLast != null) {
+    const remaining = avgInterval - sinceLast;
+    if (remaining > 0) {
+      estimateLine = `Next transfusion likely in ~${remaining} day${remaining === 1 ? "" : "s"} based on your recent interval.`;
+    } else {
+      estimateLine = "Around your typical interval now, based on your recent pattern.";
+    }
+  }
 
   // Quick add fatigue
   const setFatigue = (level) => {
@@ -63,6 +79,15 @@ export default function Dashboard() {
             {sinceLast == null ? "no transfusion logged" : sinceLast === 1 ? "day ago" : "days ago"}
           </span>
         </div>
+
+        {estimateLine && (
+          <p
+            className="text-xs text-muted-foreground -mt-2 mb-4 leading-relaxed"
+            data-testid="next-transfusion-estimate"
+          >
+            {estimateLine}
+          </p>
+        )}
 
         <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border">
           <div>

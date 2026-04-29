@@ -17,6 +17,22 @@ export function daysSince(dateStr) {
   return differenceInCalendarDays(new Date(), parseISO(dateStr));
 }
 
+// Average gap (in days) between the most recent N transfusion dates.
+// `dates` should be an array of YYYY-MM-DD strings sorted DESCENDING (newest first).
+// Returns null if fewer than 2 dates are provided.
+export function avgIntervalDays(dates, n = 3) {
+  if (!Array.isArray(dates) || dates.length < 2) return null;
+  const recent = dates.slice(0, n);
+  const gaps = [];
+  for (let i = 0; i < recent.length - 1; i++) {
+    const newer = parseISO(recent[i]);
+    const older = parseISO(recent[i + 1]);
+    gaps.push(differenceInCalendarDays(newer, older));
+  }
+  if (gaps.length === 0) return null;
+  return Math.round(gaps.reduce((a, b) => a + b, 0) / gaps.length);
+}
+
 export function lastNDays(n) {
   const end = new Date();
   const start = subDays(end, n - 1);

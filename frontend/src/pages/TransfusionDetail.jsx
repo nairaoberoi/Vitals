@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import MobileLayout from "@/components/MobileLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { transfusionsAPI } from "@/lib/storage";
+import { transfusionsAPI, transfusionAttachmentsAPI } from "@/lib/storage";
 import { fmt } from "@/lib/dateUtils";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2, Paperclip, FileText, Image as ImageIcon, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
@@ -17,6 +17,8 @@ export default function TransfusionDetail() {
   const [editing, setEditing] = useState(false);
   const [entry, setEntry] = useState(null);
   const [form, setForm] = useState(null);
+  const [viewer, setViewer] = useState(null); // { url, mime, filename }
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const e = transfusionsAPI.get(id);
@@ -57,6 +59,53 @@ export default function TransfusionDetail() {
     toast.success("Entry removed");
     navigate("/transfusions");
   };
+
+  const handleAttach = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      await transfusionAttachmentsAPI.add(entry.id, file);
+      setEntry(transfusionsAPI.get(entry.id));
+      toast.success("Attached");
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not attach file");
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const openAttachment = async (att) => {
+    try {
+      const blob = await transfusionAttachmentsAPI.getBlob(att.id);
+      if (!blob) {
+        toast.error("File missing");
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      setViewer({ url, mime: att.mime, filename: att.filename });
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not open file");
+    }
+  };
+
+  const closeViewer = () => {
+    if (viewer?.url) URL.revokeObjectURL(viewer.url);
+    setViewer(null);
+  };
+
+  const removeAttachment = async (attId) => {
+    try {
+      await transfusionAttachmentsAPI.remove(entry.id, attId);
+      setEntry(transfusionsAPI.get(entry.id));
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not remove");
+    }
+  };
+
+  const attachments = entry?.attachments || [];
 
   return (
     <MobileLayout
@@ -105,6 +154,76 @@ export default function TransfusionDetail() {
           <div className="soft-card p-4">
             <div className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground mb-1">Notes</div>
             <div className="text-sm whitespace-pre-wrap">{entry.notes || <span className="text-muted-foreground">No notes</span>}</div>
+          </div>
+
+          {/* Attachments — files tied to this specific transfusion */}
+          <div className="soft-card p-4" data-testid="transfusion-attachments-section">
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <div className="min-w-0">
+                <div className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">Lab slips & related documents</div>
+                <div className="text-[11px] text-muted-foreground/80 mt-0.5">Attach the pre-transfusion CBC slip or anything tied to this entry.</div>
+              </div>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                aria-label="Attach file"
+                data-testid="attach-file-btn"
+                className="tap-44 w-10 h-10 grid place-items-center rounded-full bg-[#E0E5EC] text-[#3A4D5E] hover:bg-[#D0D7E0] transition-colors flex-shrink-0"
+              >
+                <Plus className="w-4 h-4" strokeWidth={2} />
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/pdf,image/*"
+                onChange={handleAttach}
+                className="hidden"
+                data-testid="attach-file-input"
+              />
+            </div>
+            {attachments.length === 0 ? (
+              <p className="text-xs text-muted-foreground/80 mt-2">
+                <Paperclip className="inline w-3 h-3 mr-1 -mt-0.5" strokeWidth={1.5} />
+                None attached.
+              </p>
+            ) : (
+              <ul className="space-y-2 mt-2" data-testid="transfusion-attachment-list">
+                {attachments.map((a) => (
+                  <li
+                    key={a.id}
+                    className="flex items-center gap-2 p-2 rounded-lg bg-[#F2F1EF] border border-border"
+                    data-testid={`attachment-${a.id}`}
+                  >
+                    <button
+                      onClick={() => openAttachment(a)}
+                      className="flex items-center gap-2 flex-1 min-w-0 text-left"
+                      data-testid={`attachment-open-${a.id}`}
+                    >
+                      <div className="w-9 h-9 rounded-md bg-[#E8E6E2] grid place-items-center flex-shrink-0">
+                        {a.mime?.startsWith("image/") ? (
+                          <ImageIcon className="w-4 h-4 text-[#5B7C99]" strokeWidth={1.5} />
+                        ) : (
+                          <FileText className="w-4 h-4 text-[#5B7C99]" strokeWidth={1.5} />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs truncate">{a.filename}</div>
+                        <div className="text-[10px] text-muted-foreground">
+                          {(a.size / 1024).toFixed(0)} KB · {fmt(a.addedAt, "MMM d")}
+                        </div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => removeAttachment(a.id)}
+                      aria-label="Remove"
+                      data-testid={`attachment-delete-${a.id}`}
+                      className="tap-44 w-9 h-9 grid place-items-center rounded-full text-muted-foreground hover:text-foreground"
+                    >
+                      <Trash2 className="w-4 h-4" strokeWidth={1.5} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="flex gap-2 pt-2">
@@ -217,6 +336,34 @@ export default function TransfusionDetail() {
             <Button onClick={save} className="tap-44 flex-1 bg-[#5B7C99] hover:bg-[#4A6A87] text-white" data-testid="save-edit-btn">
               Save
             </Button>
+          </div>
+        </div>
+      )}
+
+      {viewer && (
+        <div className="fixed inset-0 bg-[#0f0f10] z-[60] flex flex-col" data-testid="attachment-viewer">
+          <div className="flex items-center justify-between px-4 py-3 text-white">
+            <span className="text-sm truncate">{viewer.filename}</span>
+            <button
+              onClick={closeViewer}
+              className="tap-44 w-10 h-10 grid place-items-center"
+              aria-label="Close"
+              data-testid="attachment-viewer-close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-auto bg-white">
+            {viewer.mime?.startsWith("image/") ? (
+              <img src={viewer.url} alt={viewer.filename} className="w-full h-auto" />
+            ) : (
+              <iframe
+                src={viewer.url}
+                title={viewer.filename}
+                className="w-full h-full border-0"
+                style={{ minHeight: "100vh" }}
+              />
+            )}
           </div>
         </div>
       )}

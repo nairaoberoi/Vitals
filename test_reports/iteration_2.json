@@ -1,0 +1,26 @@
+{
+  "summary": "Frontend-only round-2 testing of thalassemia tracker at 390x844 viewport. Verified: (1) Dashboard 'next transfusion' estimate (hidden <2 entries, '~N days' when due, 'Around your typical interval now' when overdue; styled plain text-muted-foreground with no icon/bg). (2) Per-transfusion attachments (Lab slips & related documents): label & description copy correct, section hidden in edit mode, PNG + PDF upload via [data-testid=attach-file-input], list shows filename/size-KB/date/icon, image opens inline, PDF opens in iframe, viewer close works, delete removes metadata AND IndexedDB blob (verified IDB get returned undefined after delete), attachments persist after reload, attachments NOT shown on /documents page, Edit→Save preserves attachments and only changes fields. (3) PWA: /manifest.json returns 200 with name='Thal Tracker', short_name='Thal', display='standalone', theme_color/background_color='#F2F1EF', icons 180/192/512 with any+maskable purposes; /sw.js returns 200 with install+fetch listeners; <link rel=manifest>, <meta theme-color>, <link apple-touch-icon> all present in index.html; SW registers with scope='/' and active state='activated' ~1.5s after load. (4) Offline behavior: with SW cached, set_offline(True) + reload renders the SPA shell (Today dashboard with summary card visible); offline fatigue tap (level 4) updates UI and persists to localStorage; after going online, reload still shows level 4 — full offline read/write confirmed. All flows pass at 390x844.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "TransfusionDetail.jsx openAttachment() creates an object URL but never revokes it on viewer dismiss IF a different attachment is opened next — closeViewer() does revoke, however switching from one attachment to another via re-open would leak the previous URL. Minor; rare flow.",
+    "transfusionAttachmentsAPI.add() stores the raw File in IndexedDB. Browser will keep the underlying disk-backed reference; for very large files that's actually fine, but no quota error handling — if user attaches a multi-MB scan and quota errors, only a generic toast 'Could not attach file' is shown. Acceptable for MVP.",
+    "sw.js precaches '/' and '/index.html' but not the hashed CRA bundles — they enter cache on first online load. If a user opens the app for the very first time while offline (impossible in practice), the shell would not render. This is the documented stale-while-revalidate trade-off; fine.",
+    "dateUtils.avgIntervalDays uses Math.round on the average — for a 3-entry history of e.g. (22,23) gaps the rounding can land 1 day off the visual expectation; copy is intentionally fuzzy ('~N days') so this is acceptable.",
+    "Pre-existing iter-1 finding: Emergent badge (fixed bottom-right ~178x40) still overlaps right-side bottom-nav targets at 390px. iter-1 report noted bottom-nav was raised to bottom:56px; verified during testing that nav-* clicks work with force=True. Real-finger taps on right-half nav at 390px may still be intercepted by the badge. Not retested in depth this iter."
+  ],
+  "updated_files": [],
+  "success_rate": { "backend": "n/a", "frontend": "100%" },
+  "test_credentials": "n/a (no auth — fully client-side)",
+  "seed_data_creation": "page.evaluate set localStorage 'thal.transfusions' to 1, 2, and 3-entry arrays with varying dates (today-2, today-24, today-46) and an overdue variant (today-30, today-52, today-74) to exercise both estimate branches. PNG (1x1 transparent) + minimal PDF blob written to /tmp/lab*.png|pdf and uploaded via set_input_files.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Round-2 features fully verified. Notes: (a) When testing the Edit button on TransfusionDetail with multiple attachments present, the edit button gets pushed near the bottom of the viewport — use scroll_into_view_if_needed() before clicking; force=True works. (b) Offline test must run AFTER ~1.5s of online navigation so the SW reaches 'activated' state and caches the shell + bundles; navigate to '/' first, wait_for_timeout(1500), then page.context.set_offline(True) and reload. (c) The shared IndexedDB 'thal_docs' DB / 'files' store is intentional between standalone documents and per-transfusion attachments — separation is by metadata location (transfusion.attachments[] vs thal.documents.meta). (d) Attachment delete confirmed to also delete the IDB blob via direct IDB read after delete. (e) Estimate text styling: rgb(122,115,108) muted, transparent bg, no svg icon — matches spec exactly.",
+  "rca of the issue": "n/a — no new issues found in round-2 scope."
+}

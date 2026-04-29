@@ -31,7 +31,8 @@ function uid() {
 }
 
 // ------------- Transfusions -------------
-// { id, date (YYYY-MM-DD), preHb: { date, value } | null, dayHb: { date, value } | null, units, notes, createdAt }
+// { id, date (YYYY-MM-DD), preHb: { date, value } | null, dayHb: { date, value } | null, units, notes,
+//   attachments: [{ id, filename, mime, size, addedAt }], createdAt }
 export const transfusionsAPI = {
   list() {
     return readList(KEYS.transfusions).sort((a, b) => (a.date < b.date ? 1 : -1));
@@ -45,13 +46,66 @@ export const transfusionsAPI = {
     if (idx >= 0) {
       list[idx] = { ...list[idx], ...entry };
     } else {
-      list.push({ id: uid(), createdAt: new Date().toISOString(), ...entry });
+      list.push({ id: uid(), createdAt: new Date().toISOString(), attachments: [], ...entry });
     }
     writeList(KEYS.transfusions, list);
     return list;
   },
   remove(id) {
     writeList(KEYS.transfusions, readList(KEYS.transfusions).filter((t) => t.id !== id));
+  },
+};
+
+// ------------- Transfusion attachments (lab slips etc.) -------------
+// File blobs share the same IndexedDB store as documents. Metadata lives on the parent transfusion entry.
+export const transfusionAttachmentsAPI = {
+  async add(transfusionId, file) {
+    const entry = transfusionsAPI.get(transfusionId);
+    if (!entry) throw new Error("transfusion not found");
+    const id = uid();
+    const db = await openDB();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, "readwrite");
+      tx.objectStore(STORE).put(file, id);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+    const attachments = Array.isArray(entry.attachments) ? entry.attachments.slice() : [];
+    attachments.push({
+      id,
+      filename: file.name,
+      mime: file.type || "application/octet-stream",
+      size: file.size,
+      addedAt: new Date().toISOString(),
+    });
+    transfusionsAPI.upsert({ ...entry, attachments });
+    return id;
+  },
+  async getBlob(attachmentId) {
+    const db = await openDB();
+    const blob = await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, "readonly");
+      const req = tx.objectStore(STORE).get(attachmentId);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    db.close();
+    return blob;
+  },
+  async remove(transfusionId, attachmentId) {
+    const entry = transfusionsAPI.get(transfusionId);
+    if (!entry) return;
+    const db = await openDB();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, "readwrite");
+      tx.objectStore(STORE).delete(attachmentId);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+    const attachments = (entry.attachments || []).filter((a) => a.id !== attachmentId);
+    transfusionsAPI.upsert({ ...entry, attachments });
   },
 };
 
